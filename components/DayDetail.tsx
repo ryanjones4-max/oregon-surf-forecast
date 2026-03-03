@@ -18,18 +18,18 @@ export function DayDetail({ samples }: Props) {
   const filtered = samples.filter((_, i) => i % 3 === 0).slice(0, 8)
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto px-4 lg:px-6">
       <table className="w-full min-w-[600px] text-sm">
         <thead>
           <tr className="border-b border-sl-border text-[10px] uppercase tracking-wider text-sl-muted">
-            <th className="py-2 pl-4 text-left font-medium">Time</th>
+            <th className="py-2 text-left font-medium">Time</th>
             <th className="py-2 text-left font-medium">Rating</th>
             <th className="py-2 text-right font-medium">Surf</th>
             <th className="py-2 text-right font-medium">Swell</th>
             <th className="py-2 text-center font-medium">Dir</th>
             <th className="py-2 text-right font-medium">Wind</th>
             <th className="py-2 text-center font-medium">Weather</th>
-            <th className="py-2 text-right pr-4 font-medium">Temp</th>
+            <th className="py-2 text-right font-medium">Air Temp</th>
           </tr>
         </thead>
         <tbody>
@@ -39,7 +39,7 @@ export function DayDetail({ samples }: Props) {
             const time = new Date(h.time)
             return (
               <tr key={h.time} className="border-b border-sl-border/50 hover:bg-sl-surface/30">
-                <td className="py-2.5 pl-4 text-sl-text">
+                <td className="py-2.5 text-sl-text">
                   {time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                 </td>
                 <td className="py-2.5">
@@ -70,7 +70,7 @@ export function DayDetail({ samples }: Props) {
                     <span title={getWeatherLabel(h.weatherCode)}>{getWeatherEmoji(h.weatherCode)}</span>
                   ) : '—'}
                 </td>
-                <td className="py-2.5 pr-4 text-right text-sl-muted tabular-nums">
+                <td className="py-2.5 text-right text-sl-muted tabular-nums">
                   {h.airTemperature != null ? `${celsiusToFahrenheit(h.airTemperature).toFixed(0)}°F` : '—'}
                 </td>
               </tr>

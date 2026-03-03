@@ -10,14 +10,14 @@ const config: Config = {
     extend: {
       colors: {
         sl: {
-          bg: '#1a1a2e',
-          surface: '#16213e',
-          card: '#1e2a47',
-          border: '#2a3a5c',
+          bg: '#181818',
+          surface: '#1f1f1f',
+          card: '#262626',
+          border: '#333333',
           accent: '#0ea5e9',
-          text: '#e2e8f0',
-          muted: '#94a3b8',
-          dark: '#0f0f23',
+          text: '#d4d4d4',
+          muted: '#7a7a7a',
+          dark: '#121212',
         },
         rating: {
           flat: '#64748b',

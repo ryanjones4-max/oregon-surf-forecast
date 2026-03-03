@@ -49,7 +49,7 @@ export function ForecastStrip({ hours, selectedDay, onSelectDay }: Props) {
 
   return (
     <div className="overflow-x-auto border-b border-sl-border bg-sl-dark">
-      <div className="flex min-w-max">
+      <div className="flex min-w-max px-4 lg:px-6">
         {days.map((day, i) => {
           const barHeight = Math.max(8, (day.maxHeight / globalMax) * 48)
           const isSelected = i === selectedDay

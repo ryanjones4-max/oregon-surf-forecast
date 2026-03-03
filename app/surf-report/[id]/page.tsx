@@ -12,12 +12,13 @@ import {
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { SpotHeader } from '@/components/SpotHeader'
 import { CurrentConditions } from '@/components/CurrentConditions'
-import { WebcamEmbed } from '@/components/WebcamEmbed'
+import { SpotHero } from '@/components/SpotHero'
 import { ForecastStrip, groupByDay } from '@/components/ForecastStrip'
 import { DayDetail } from '@/components/DayDetail'
 import { SwellChart } from '@/components/SwellChart'
 import { WindGraph } from '@/components/WindGraph'
 import { TideChart } from '@/components/TideChart'
+import { WeatherStrip } from '@/components/WeatherStrip'
 import { SpotGuide } from '@/components/SpotGuide'
 import { NearbySpots } from '@/components/NearbySpots'
 import { DaylightInfo } from '@/components/DaylightInfo'
@@ -137,24 +138,9 @@ export default function SurfReportPage() {
 
       {!loading && activeTab === 'report' && (
         <div className="mx-auto max-w-7xl">
-          {/* Webcam + Current Conditions */}
+          {/* Hero Photo + Current Conditions */}
           <div className="grid lg:grid-cols-[1fr_320px]">
-            {/* Webcam */}
-            <div className="bg-black">
-              {spot.webcam ? (
-                <WebcamEmbed webcam={spot.webcam} breakName={spot.name} />
-              ) : (
-                <div className="flex h-[300px] items-center justify-center bg-sl-dark lg:h-[420px]">
-                  <div className="text-center text-sl-muted">
-                    <svg className="mx-auto mb-2 h-10 w-10 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
-                    </svg>
-                    <p className="text-sm">No cam available</p>
-                    <p className="mt-1 text-xs text-sl-muted/60">{spot.name}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+            <SpotHero spotName={spot.name} lat={spot.lat} lng={spot.lng} />
 
             {/* Current Conditions Sidebar */}
             <div className="bg-sl-dark p-3 lg:p-4">
@@ -226,6 +212,17 @@ export default function SurfReportPage() {
             >
               <TideChart lat={spot.lat} lng={spot.lng} />
             </CollapsibleSection>
+
+            {/* Weather Strip */}
+            {allHours.length > 0 && (
+              <CollapsibleSection
+                title="Weather"
+                collapsed={chartsCollapsed['weather']}
+                onToggle={() => toggleChart('weather')}
+              >
+                <WeatherStrip hours={allHours} />
+              </CollapsibleSection>
+            )}
           </div>
 
           {/* Bottom section: Daylight + Nearby */}

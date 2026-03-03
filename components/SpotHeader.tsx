@@ -59,13 +59,13 @@ export function SpotHeader({ spot, forecast, activeTab, onTabChange }: Props) {
         </div>
 
         {/* Tab navigation */}
-        <nav className="flex gap-0 -mb-px">
+        <nav className="-ml-3 flex gap-0 -mb-px">
           {(['report', 'guide'] as const).map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => onTabChange(tab)}
-              className={`px-4 py-2.5 text-sm font-medium capitalize transition-colors border-b-2 ${
+              className={`px-3 py-2.5 text-sm font-medium capitalize transition-colors border-b-2 ${
                 activeTab === tab
                   ? 'border-sl-accent text-white'
                   : 'border-transparent text-sl-muted hover:text-white hover:border-sl-border'
