@@ -1,17 +1,17 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { celsiusToFahrenheit } from '@/lib/surfRating'
 import { getWeatherEmoji } from '@/lib/weatherCodes'
-import { useSharedCrosshair, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
 }
 
 export function WeatherStrip({ hours }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null!)
+  const { containerRef, onScroll } = useSyncedScroll()
   const { hoverTime, setHoverTime } = useSharedCrosshair()
 
   if (hours.length === 0) return null
@@ -64,6 +64,7 @@ export function WeatherStrip({ hours }: Props) {
         className="overflow-x-auto touch-pan-x"
         onPointerMove={handlePointerMove}
         onPointerLeave={handlePointerLeave}
+        onScroll={onScroll}
       >
         <div style={{ width: totalW }}>
           {/* Date header row */}

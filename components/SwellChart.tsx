@@ -1,9 +1,9 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { metersToFeet, degreesToCompass, computeSurfRating, getRatingDot, getRatingLabel, estimateBreakingHeight, surfHeightRange } from '@/lib/surfRating'
-import { useSharedCrosshair, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -11,7 +11,7 @@ interface Props {
 
 export function SwellChart({ hours }: Props) {
   const { hoverTime, setHoverTime } = useSharedCrosshair()
-  const containerRef = useRef<HTMLDivElement>(null!)
+  const { containerRef, onScroll } = useSyncedScroll()
 
   if (hours.length === 0) return null
 
@@ -110,6 +110,7 @@ export function SwellChart({ hours }: Props) {
         className="overflow-x-auto touch-pan-x"
         onPointerMove={handlePointerMove}
         onPointerLeave={handlePointerLeave}
+        onScroll={onScroll}
       >
         <svg width={chartW} height={totalH} className="select-none">
           {/* Rating color strip */}

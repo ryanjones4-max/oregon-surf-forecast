@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { calculateSunTimes } from '@/lib/sun'
-import { useSharedCrosshair, PX_PER_STEP } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, PX_PER_STEP } from './ChartCrosshair'
 
 interface TidePoint {
   time: string
@@ -32,7 +32,7 @@ export function TideChart({ lat, lng }: Props) {
   const [tideData, setTideData] = useState<TidePoint[]>([])
   const [loading, setLoading] = useState(true)
   const { hoverTime, setHoverTime } = useSharedCrosshair()
-  const containerRef = useRef<HTMLDivElement>(null!)
+  const { containerRef, onScroll } = useSyncedScroll()
 
   useEffect(() => {
     setTideData(generateSyntheticTides(FORECAST_DAYS, lat))
@@ -144,6 +144,7 @@ export function TideChart({ lat, lng }: Props) {
         className="overflow-x-auto touch-pan-x"
         onPointerMove={handlePointerMove}
         onPointerLeave={handlePointerLeave}
+        onScroll={onScroll}
       >
         <svg width={chartW} height={totalH} className="select-none">
           <defs>
@@ -296,8 +297,8 @@ function generateTideApprox(timeStr: string, lat: number): number {
 
 function generateSyntheticTides(days: number, lat: number): TidePoint[] {
   const points: TidePoint[] = []
-  const start = new Date()
-  start.setHours(0, 0, 0, 0)
+  const now = new Date()
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0))
   for (let h = 0; h < days * 24; h++) {
     const t = new Date(start.getTime() + h * 3600000)
     points.push({ time: t.toISOString(), height: generateTideApprox(t.toISOString(), lat) })

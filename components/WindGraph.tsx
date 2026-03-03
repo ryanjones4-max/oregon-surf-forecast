@@ -1,9 +1,9 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { kmhToMph, degreesToCompass } from '@/lib/surfRating'
-import { useSharedCrosshair, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -27,7 +27,7 @@ function windLabel(speed: number): string {
 
 export function WindGraph({ hours }: Props) {
   const { hoverTime, setHoverTime } = useSharedCrosshair()
-  const containerRef = useRef<HTMLDivElement>(null!)
+  const { containerRef, onScroll } = useSyncedScroll()
 
   const sampled = hours.filter((_, i) => i % 3 === 0)
   const speeds = sampled.map((h) => kmhToMph(h.windSpeed ?? 0))
@@ -113,6 +113,7 @@ export function WindGraph({ hours }: Props) {
         className="overflow-x-auto touch-pan-x"
         onPointerMove={handlePointerMove}
         onPointerLeave={handlePointerLeave}
+        onScroll={onScroll}
       >
         <svg width={chartW} height={totalH} className="select-none">
           {/* Day dividers */}
