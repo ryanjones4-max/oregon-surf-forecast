@@ -1,9 +1,9 @@
 'use client'
 
-import { useRef, useCallback, useEffect, useState } from 'react'
+import { useRef, useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { metersToFeet, degreesToCompass, computeSurfRating, getRatingDot, getRatingLabel, estimateBreakingHeight, surfHeightRange } from '@/lib/surfRating'
-import { useSharedCrosshair } from './ChartCrosshair'
+import { useSharedCrosshair, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -12,20 +12,6 @@ interface Props {
 export function SwellChart({ hours }: Props) {
   const { hoverTime, setHoverTime } = useSharedCrosshair()
   const containerRef = useRef<HTMLDivElement>(null!)
-  const [containerW, setContainerW] = useState(0)
-
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setContainerW(entry.contentRect.width)
-      }
-    })
-    ro.observe(el)
-    setContainerW(el.clientWidth)
-    return () => ro.disconnect()
-  }, [])
 
   if (hours.length === 0) return null
 
@@ -33,8 +19,8 @@ export function SwellChart({ hours }: Props) {
   const heights = sampled.map((h) => metersToFeet(estimateBreakingHeight(h.waveHeight, h.swellPeriod)))
   const maxH = Math.max(...heights, 1)
 
-  const chartW = Math.max(containerW, 300)
-  const step = chartW / sampled.length
+  const step = PX_PER_STEP
+  const chartW = sampled.length * step
   const barW = Math.max(2, step * 0.7)
 
   const ratingBarH = 6
@@ -75,7 +61,7 @@ export function SwellChart({ hours }: Props) {
   const hoverIdx = resolveHoverIdx(sampled, hoverTime)
   const hov = hoverIdx != null ? bars[hoverIdx] : null
 
-  const labelEvery = Math.max(1, Math.round(sampled.length / 12))
+  const labelEvery = Math.max(1, Math.round(sampled.length / 16))
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const container = containerRef.current
@@ -89,9 +75,7 @@ export function SwellChart({ hours }: Props) {
     setHoverTime(sampled[clamped].time)
   }, [step, sampled, setHoverTime])
 
-  const handlePointerLeave = useCallback(() => {
-    setHoverTime(null)
-  }, [setHoverTime])
+  const handlePointerLeave = useCallback(() => { setHoverTime(null) }, [setHoverTime])
 
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">
@@ -123,122 +107,82 @@ export function SwellChart({ hours }: Props) {
 
       <div
         ref={containerRef}
-        className="w-full"
+        className="overflow-x-auto touch-pan-x"
         onPointerMove={handlePointerMove}
         onPointerLeave={handlePointerLeave}
       >
-        {containerW > 0 && (
-          <svg width={chartW} height={totalH} className="w-full select-none">
-            {/* Rating color strip at top */}
-            {bars.map((b) => (
-              <rect
-                key={`r${b.i}`}
-                x={b.x}
-                y={0}
-                width={barW}
-                height={ratingBarH}
-                rx={1}
-                fill={getRatingDot(b.rating)}
-                opacity={hoverIdx === b.i ? 1 : 0.8}
-              />
-            ))}
+        <svg width={chartW} height={totalH} className="select-none">
+          {/* Rating color strip */}
+          {bars.map((b) => (
+            <rect key={`r${b.i}`} x={b.x} y={0} width={barW} height={ratingBarH} rx={1}
+              fill={getRatingDot(b.rating)} opacity={hoverIdx === b.i ? 1 : 0.8} />
+          ))}
 
-            {/* Day dividers */}
-            {dayLabels.map((d, i) => (
+          {/* Day dividers */}
+          {dayLabels.map((d, i) => (
+            <g key={i}>
+              <line x1={d.x} y1={ratingBarH} x2={d.x} y2={ratingBarH + chartH} stroke="#333333" strokeWidth="1" />
+              <text x={d.x + 4} y={ratingBarH + chartH + 14} fill="#858585" fontSize="9">{d.label}</text>
+            </g>
+          ))}
+
+          {/* Y-axis grid */}
+          {[0, maxH / 2, maxH].map((v, i) => {
+            const y = ratingBarH + chartH - (v / maxH) * (chartH - 16)
+            return (
               <g key={i}>
-                <line x1={d.x} y1={ratingBarH} x2={d.x} y2={ratingBarH + chartH} stroke="#333333" strokeWidth="1" />
-                <text x={d.x + 4} y={ratingBarH + chartH + 14} fill="#858585" fontSize="9">{d.label}</text>
+                <line x1={0} y1={y} x2={chartW} y2={y} stroke="#333333" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.4" />
+                <text x={chartW - 2} y={y - 2} fill="#6e6e6e" fontSize="8" textAnchor="end">{v.toFixed(0)}ft</text>
               </g>
-            ))}
+            )
+          })}
 
-            {/* Y-axis grid */}
-            {[0, maxH / 2, maxH].map((v, i) => {
-              const y = ratingBarH + chartH - (v / maxH) * (chartH - 16)
-              return (
-                <g key={i}>
-                  <line x1={0} y1={y} x2={chartW} y2={y} stroke="#333333" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.4" />
-                  <text x={chartW - 2} y={y - 2} fill="#6e6e6e" fontSize="8" textAnchor="end">{v.toFixed(0)}ft</text>
-                </g>
-              )
-            })}
+          {/* Bars */}
+          {bars.map((b) => (
+            <rect key={`b${b.i}`} x={b.x} y={ratingBarH + chartH - b.barH} width={barW} height={b.barH} rx={1.5}
+              fill={getRatingDot(b.rating)} opacity={hoverIdx === b.i ? 1 : 0.45} />
+          ))}
 
-            {/* Surf height bars */}
-            {bars.map((b) => {
-              const isHov = hoverIdx === b.i
-              return (
-                <rect
-                  key={`b${b.i}`}
-                  x={b.x}
-                  y={ratingBarH + chartH - b.barH}
-                  width={barW}
-                  height={b.barH}
-                  rx={1.5}
-                  fill={getRatingDot(b.rating)}
-                  opacity={isHov ? 1 : 0.45}
-                />
-              )
-            })}
+          {/* Height labels */}
+          {bars.map((b) => {
+            if (b.i % labelEvery !== 0 && hoverIdx !== b.i) return null
+            return (
+              <text key={`l${b.i}`} x={b.x + barW / 2} y={ratingBarH + chartH - b.barH - 4}
+                fill="#d4d4d4" fontSize="8" fontWeight={hoverIdx === b.i ? '700' : '500'} textAnchor="middle">
+                {b.ft.toFixed(0)}
+              </text>
+            )
+          })}
 
-            {/* Height labels */}
-            {bars.map((b) => {
-              if (b.i % labelEvery !== 0 && hoverIdx !== b.i) return null
-              return (
-                <text
-                  key={`l${b.i}`}
-                  x={b.x + barW / 2}
-                  y={ratingBarH + chartH - b.barH - 4}
-                  fill="#d4d4d4"
-                  fontSize="8"
-                  fontWeight={hoverIdx === b.i ? '700' : '500'}
-                  textAnchor="middle"
-                >
-                  {b.ft.toFixed(0)}
-                </text>
-              )
-            })}
+          {/* Hour labels */}
+          {bars.map((b) => {
+            if (b.i % labelEvery !== 0) return null
+            const hour = new Date(b.h.time).getHours()
+            return (
+              <text key={`h${b.i}`} x={b.x + barW / 2} y={ratingBarH + chartH + 14} fill="#6e6e6e" fontSize="7" textAnchor="middle">
+                {hour === 0 ? '12a' : hour < 12 ? `${hour}` : hour === 12 ? '12p' : `${hour - 12}`}
+              </text>
+            )
+          })}
 
-            {/* Hour labels on x-axis */}
-            {bars.map((b) => {
-              if (b.i % labelEvery !== 0) return null
-              const hour = new Date(b.h.time).getHours()
-              return (
-                <text key={`h${b.i}`} x={b.x + barW / 2} y={ratingBarH + chartH + 14} fill="#6e6e6e" fontSize="7" textAnchor="middle">
-                  {hour === 0 ? '12a' : hour < 12 ? `${hour}` : hour === 12 ? '12p' : `${hour - 12}`}
-                </text>
-              )
-            })}
+          {/* Now indicator */}
+          {nowX > 0 && (
+            <g>
+              <line x1={nowX} y1={ratingBarH} x2={nowX} y2={ratingBarH + chartH} stroke="#d4d4d4" strokeWidth="1.5" />
+              <rect x={nowX - 22} y={ratingBarH + 2} width={44} height={14} rx={3} fill="#121212" stroke="#d4d4d4" strokeWidth="0.5" />
+              <text x={nowX} y={ratingBarH + 12} fill="#d4d4d4" fontSize="8" fontWeight="600" textAnchor="middle">{nowTime}</text>
+            </g>
+          )}
 
-            {/* Now indicator */}
-            {nowX > 0 && (
-              <g>
-                <line x1={nowX} y1={ratingBarH} x2={nowX} y2={ratingBarH + chartH} stroke="#d4d4d4" strokeWidth="1.5" />
-                <rect x={nowX - 22} y={ratingBarH + 2} width={44} height={14} rx={3} fill="#121212" stroke="#d4d4d4" strokeWidth="0.5" />
-                <text x={nowX} y={ratingBarH + 12} fill="#d4d4d4" fontSize="8" fontWeight="600" textAnchor="middle">{nowTime}</text>
-              </g>
-            )}
-
-            {/* Hover crosshair */}
-            {hov && (
-              <g>
-                <line x1={hov.x + barW / 2} y1={ratingBarH} x2={hov.x + barW / 2} y2={ratingBarH + chartH} stroke="#d4d4d4" strokeWidth="1" opacity="0.3" />
-                <circle cx={hov.x + barW / 2} cy={ratingBarH + chartH - hov.barH} r="4" fill={getRatingDot(hov.rating)} stroke="#121212" strokeWidth="2" />
-              </g>
-            )}
-          </svg>
-        )}
+          {/* Hover crosshair */}
+          {hov && (
+            <g>
+              <line x1={hov.x + barW / 2} y1={ratingBarH} x2={hov.x + barW / 2} y2={ratingBarH + chartH} stroke="#d4d4d4" strokeWidth="1" opacity="0.3" />
+              <circle cx={hov.x + barW / 2} cy={ratingBarH + chartH - hov.barH} r="4" fill={getRatingDot(hov.rating)} stroke="#121212" strokeWidth="2" />
+            </g>
+          )}
+        </svg>
       </div>
     </div>
   )
-}
-
-function resolveHoverIdx(sampled: ForecastDataPoint[], hoverTime: string | null): number | null {
-  if (!hoverTime || sampled.length === 0) return null
-  const target = new Date(hoverTime).getTime()
-  let best = 0
-  let bestDiff = Infinity
-  for (let i = 0; i < sampled.length; i++) {
-    const diff = Math.abs(new Date(sampled[i].time).getTime() - target)
-    if (diff < bestDiff) { bestDiff = diff; best = i }
-  }
-  return best
 }
