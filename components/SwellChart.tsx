@@ -13,6 +13,21 @@ export function SwellChart({ hours }: Props) {
   const { hoverTime, setHoverTime } = useSharedCrosshair()
   const { containerRef, onScroll } = useSyncedScroll()
 
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current
+    if (!container || hours.length === 0) return
+    const svg = container.querySelector('svg')
+    if (!svg) return
+    const rect = svg.getBoundingClientRect()
+    const x = e.clientX - rect.left + container.scrollLeft
+    const sampled = hours.filter((_, i) => i % 3 === 0)
+    const idx = Math.round(x / PX_PER_STEP)
+    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
+    setHoverTime(sampled[clamped].time)
+  }, [hours, setHoverTime, containerRef])
+
+  const handlePointerLeave = useCallback(() => { setHoverTime(null) }, [setHoverTime])
+
   if (hours.length === 0) return null
 
   const sampled = hours.filter((_, i) => i % 3 === 0)
@@ -62,20 +77,6 @@ export function SwellChart({ hours }: Props) {
   const hov = hoverIdx != null ? bars[hoverIdx] : null
 
   const labelEvery = Math.max(1, Math.round(sampled.length / 16))
-
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const container = containerRef.current
-    if (!container) return
-    const svg = container.querySelector('svg')
-    if (!svg) return
-    const rect = svg.getBoundingClientRect()
-    const x = e.clientX - rect.left + container.scrollLeft
-    const idx = Math.round(x / step)
-    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
-    setHoverTime(sampled[clamped].time)
-  }, [step, sampled, setHoverTime])
-
-  const handlePointerLeave = useCallback(() => { setHoverTime(null) }, [setHoverTime])
 
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">

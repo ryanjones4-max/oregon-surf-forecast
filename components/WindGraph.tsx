@@ -86,7 +86,7 @@ export function WindGraph({ hours }: Props) {
     const idx = Math.round(x / step)
     const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
     setHoverTime(sampled[clamped].time)
-  }, [step, sampled, setHoverTime])
+  }, [step, sampled, setHoverTime, containerRef])
 
   const handlePointerLeave = useCallback(() => { setHoverTime(null) }, [setHoverTime])
 

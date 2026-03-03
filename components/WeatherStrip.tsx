@@ -14,6 +14,21 @@ export function WeatherStrip({ hours }: Props) {
   const { containerRef, onScroll } = useSyncedScroll()
   const { hoverTime, setHoverTime } = useSharedCrosshair()
 
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current
+    if (!container || hours.length === 0) return
+    const inner = container.querySelector('[data-weather-cols]') as HTMLElement | null
+    const el = inner ?? container
+    const rect = el.getBoundingClientRect()
+    const x = e.clientX - rect.left + container.scrollLeft
+    const sampled = hours.filter((_, i) => i % 3 === 0)
+    const idx = Math.floor(x / PX_PER_STEP)
+    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
+    setHoverTime(sampled[clamped].time)
+  }, [hours, setHoverTime, containerRef])
+
+  const handlePointerLeave = useCallback(() => { setHoverTime(null) }, [setHoverTime])
+
   if (hours.length === 0) return null
 
   const sampled = hours.filter((_, i) => i % 3 === 0)
@@ -39,20 +54,6 @@ export function WeatherStrip({ hours }: Props) {
       })
     }
   })
-
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const container = containerRef.current
-    if (!container) return
-    const inner = container.querySelector('[data-weather-cols]') as HTMLElement | null
-    const el = inner ?? container
-    const rect = el.getBoundingClientRect()
-    const x = e.clientX - rect.left + container.scrollLeft
-    const idx = Math.floor(x / colW)
-    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
-    setHoverTime(sampled[clamped].time)
-  }, [colW, sampled, setHoverTime])
-
-  const handlePointerLeave = useCallback(() => { setHoverTime(null) }, [setHoverTime])
 
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">
