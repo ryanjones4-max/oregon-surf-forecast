@@ -11,7 +11,7 @@ export function SpotHero({ spotName, lat, lng }: Props) {
   const mapsLink = `https://www.google.com/maps/@${lat},${lng},15z/data=!3m1!1e1`
 
   return (
-    <div className="relative min-h-[280px] overflow-hidden bg-sl-dark lg:min-h-[400px] h-full">
+    <div className="absolute inset-0">
       <iframe
         src={mapSrc}
         title={`${spotName} satellite view`}

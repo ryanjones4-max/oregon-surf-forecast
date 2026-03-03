@@ -139,11 +139,13 @@ export default function SurfReportPage() {
       {!loading && activeTab === 'report' && (
         <div className="mx-auto max-w-7xl">
           {/* Hero Photo + Current Conditions */}
-          <div className="grid lg:grid-cols-[1fr_320px]">
-            <SpotHero spotName={spot.name} lat={spot.lat} lng={spot.lng} />
+          <div className="lg:flex">
+            <div className="relative min-h-[280px] overflow-hidden bg-sl-dark lg:flex-1">
+              <SpotHero spotName={spot.name} lat={spot.lat} lng={spot.lng} />
+            </div>
 
             {/* Current Conditions Sidebar */}
-            <div className="bg-sl-dark p-3 lg:p-4">
+            <div className="bg-sl-dark p-3 lg:w-[320px] lg:shrink-0 lg:p-4">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-[10px] font-semibold uppercase tracking-widest text-sl-muted">Current Conditions</h3>
                 {cache?.fetchedAt && (

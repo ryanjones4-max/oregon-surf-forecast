@@ -7,6 +7,7 @@ import {
   computeSurfRating,
   getRatingBg,
   getRatingLabel,
+  surfHeightRange,
 } from '@/lib/surfRating'
 import { getWeatherLabel } from '@/lib/weatherCodes'
 import {
@@ -36,8 +37,8 @@ function ConditionCard({ icon, label, children }: { icon: React.ReactNode; label
 }
 
 export function CurrentConditions({ forecast: fc, lat, lng }: Props) {
-  const ft = metersToFeet(fc.waveHeight)
-  const rating = computeSurfRating({ waveHeight: fc.waveHeight, swellPeriod: fc.swellPeriod, windSpeed: fc.windSpeed })
+  const { lo, hi } = surfHeightRange(fc.waveHeight, fc.swellPeriod)
+  const rating = computeSurfRating(fc)
 
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1 lg:gap-2.5">
@@ -48,7 +49,7 @@ export function CurrentConditions({ forecast: fc, lat, lng }: Props) {
             <span className="text-xs font-bold text-white">{getRatingLabel(rating)}</span>
           </div>
           <span className="text-lg font-bold tabular-nums text-white">
-            {ft.toFixed(0)}-{(ft * 1.3).toFixed(0)}
+            {lo}-{hi}
             <span className="ml-0.5 text-xs font-normal text-sl-muted">ft</span>
           </span>
         </div>

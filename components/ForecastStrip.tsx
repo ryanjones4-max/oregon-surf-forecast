@@ -1,7 +1,7 @@
 'use client'
 
 import type { ForecastDataPoint } from '@/lib/forecast'
-import { metersToFeet, computeSurfRating, getRatingDot } from '@/lib/surfRating'
+import { metersToFeet, computeSurfRating, getRatingDot, estimateBreakingHeight } from '@/lib/surfRating'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -27,7 +27,7 @@ function groupByDay(hours: ForecastDataPoint[]): DaySummary[] {
   }
   return Array.from(map.entries()).map(([, samples]) => {
     const sorted = samples.sort((a, b) => a.time.localeCompare(b.time))
-    const heights = sorted.map((s) => metersToFeet(s.waveHeight))
+    const heights = sorted.map((s) => metersToFeet(estimateBreakingHeight(s.waveHeight, s.swellPeriod)))
     const maxH = Math.max(...heights)
     const minH = Math.min(...heights)
     const mid = sorted[Math.floor(sorted.length / 2)]
@@ -37,7 +37,7 @@ function groupByDay(hours: ForecastDataPoint[]): DaySummary[] {
       dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
       maxHeight: maxH,
       minHeight: minH,
-      rating: computeSurfRating({ waveHeight: mid.waveHeight, swellPeriod: mid.swellPeriod, windSpeed: mid.windSpeed }),
+      rating: computeSurfRating(mid),
       samples: sorted,
     }
   })

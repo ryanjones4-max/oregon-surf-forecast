@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
-import { metersToFeet, degreesToCompass, computeSurfRating, getRatingDot, getRatingLabel } from '@/lib/surfRating'
+import { metersToFeet, degreesToCompass, computeSurfRating, getRatingDot, getRatingLabel, estimateBreakingHeight, surfHeightRange } from '@/lib/surfRating'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -42,7 +42,7 @@ export function SwellChart({ hours }: Props) {
   if (hours.length === 0) return null
 
   const sampled = hours.filter((_, i) => i % 3 === 0)
-  const heights = sampled.map((h) => metersToFeet(h.waveHeight))
+  const heights = sampled.map((h) => metersToFeet(estimateBreakingHeight(h.waveHeight, h.swellPeriod)))
   const maxH = Math.max(...heights, 1)
 
   const chartW = Math.max(containerW, 300)
@@ -59,8 +59,9 @@ export function SwellChart({ hours }: Props) {
   let nowTime = ''
 
   const bars = sampled.map((h, i) => {
-    const ft = metersToFeet(h.waveHeight)
-    const rating = computeSurfRating({ waveHeight: h.waveHeight, swellPeriod: h.swellPeriod, windSpeed: h.windSpeed })
+    const ft = metersToFeet(estimateBreakingHeight(h.waveHeight, h.swellPeriod))
+    const { lo, hi } = surfHeightRange(h.waveHeight, h.swellPeriod)
+    const rating = computeSurfRating(h)
     const barH = Math.max(2, (ft / maxH) * (chartH - 16))
     const x = i * step
     const hMs = new Date(h.time).getTime()
@@ -69,7 +70,7 @@ export function SwellChart({ hours }: Props) {
       nowX = x + barW / 2
       nowTime = new Date(now).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
     }
-    return { x, ft, barH, rating, h, i }
+    return { x, ft, lo, hi, barH, rating, h, i }
   })
 
   const dayLabels: Array<{ x: number; label: string }> = []
@@ -98,7 +99,7 @@ export function SwellChart({ hours }: Props) {
                 {new Date(hov.h.time).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}
               </div>
               <div className="mt-0.5 text-base font-bold text-white tabular-nums">
-                {hov.ft.toFixed(0)}-{(hov.ft * 1.3).toFixed(0)} ft
+                {hov.lo}-{hov.hi} ft
               </div>
             </div>
             <div className="text-left text-[10px] leading-relaxed text-sl-muted">

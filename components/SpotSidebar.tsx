@@ -2,7 +2,7 @@
 
 import type { SurfBreak } from '@/lib/breaks'
 import type { ForecastDataPoint } from '@/lib/forecast'
-import { metersToFeet, computeSurfRating, getRatingDot, getRatingLabel } from '@/lib/surfRating'
+import { computeSurfRating, getRatingDot, getRatingLabel, surfHeightRange } from '@/lib/surfRating'
 
 interface Props {
   breaks: SurfBreak[]
@@ -36,8 +36,8 @@ export function SpotSidebar({ breaks, selectedId, onSelect, getForecast }: Props
             const b = breakMap.get(id)
             if (!b) return null
             const fc = getForecast(b.clusterId)
-            const rating = fc ? computeSurfRating({ waveHeight: fc.waveHeight, swellPeriod: fc.swellPeriod, windSpeed: fc.windSpeed }) : null
-            const heightFt = fc ? metersToFeet(fc.waveHeight) : null
+            const rating = fc ? computeSurfRating(fc) : null
+            const range = fc ? surfHeightRange(fc.waveHeight, fc.swellPeriod) : null
 
             return (
               <button
@@ -59,8 +59,8 @@ export function SpotSidebar({ breaks, selectedId, onSelect, getForecast }: Props
                 )}
                 {!rating && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-sl-border" />}
                 <span className="flex-1 truncate text-sm font-medium">{b.name}</span>
-                {heightFt != null && (
-                  <span className="text-xs tabular-nums text-sl-muted">{heightFt.toFixed(0)}-{(heightFt * 1.3).toFixed(0)} ft</span>
+                {range && (
+                  <span className="text-xs tabular-nums text-sl-muted">{range.lo}-{range.hi} ft</span>
                 )}
               </button>
             )

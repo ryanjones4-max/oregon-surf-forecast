@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import type { SurfBreak } from '@/lib/breaks'
 import type { ForecastDataPoint } from '@/lib/forecast'
-import { metersToFeet, computeSurfRating, getRatingBg, getRatingLabel } from '@/lib/surfRating'
+import { computeSurfRating, getRatingBg, getRatingLabel, surfHeightRange } from '@/lib/surfRating'
 
 interface Props {
   spot: SurfBreak
@@ -22,9 +22,9 @@ const levelColors: Record<string, string> = {
 
 export function SpotHeader({ spot, forecast, activeTab, onTabChange }: Props) {
   const rating = forecast
-    ? computeSurfRating({ waveHeight: forecast.waveHeight, swellPeriod: forecast.swellPeriod, windSpeed: forecast.windSpeed })
+    ? computeSurfRating(forecast)
     : null
-  const ft = forecast ? metersToFeet(forecast.waveHeight) : null
+  const range = forecast ? surfHeightRange(forecast.waveHeight, forecast.swellPeriod) : null
 
   return (
     <header className="border-b border-sl-border bg-sl-dark">
@@ -45,13 +45,13 @@ export function SpotHeader({ spot, forecast, activeTab, onTabChange }: Props) {
             </span>
           </div>
 
-          {rating && ft != null && (
+          {rating && range && (
             <div className="flex items-center gap-3 ml-auto">
               <div className={`${getRatingBg(rating)} flex items-center gap-2 rounded-lg px-4 py-2`}>
                 <span className="text-lg font-bold text-white">{getRatingLabel(rating)}</span>
               </div>
               <div className="text-right">
-                <div className="text-xl font-bold tabular-nums text-white">{ft.toFixed(0)}-{(ft * 1.3).toFixed(0)} ft</div>
+                <div className="text-xl font-bold tabular-nums text-white">{range.lo}-{range.hi} ft</div>
                 <div className="text-[10px] uppercase tracking-wider text-sl-muted">Surf Height</div>
               </div>
             </div>

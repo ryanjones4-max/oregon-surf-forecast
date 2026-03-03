@@ -7,6 +7,7 @@ import {
   computeSurfRating,
   getRatingBg,
   getRatingLabel,
+  surfHeightRange,
 } from '@/lib/surfRating'
 import { getWeatherLabel } from '@/lib/weatherCodes'
 
@@ -27,8 +28,8 @@ function Pill({ label, value, unit }: { label: string; value: string; unit?: str
 }
 
 export function ConditionsBar({ forecast: fc }: Props) {
-  const ft = metersToFeet(fc.waveHeight)
-  const rating = computeSurfRating({ waveHeight: fc.waveHeight, swellPeriod: fc.swellPeriod, windSpeed: fc.windSpeed })
+  const { lo, hi } = surfHeightRange(fc.waveHeight, fc.swellPeriod)
+  const rating = computeSurfRating(fc)
 
   return (
     <div className="flex flex-wrap items-center gap-1 rounded-lg bg-sl-card border border-sl-border px-2 py-3">
@@ -36,7 +37,7 @@ export function ConditionsBar({ forecast: fc }: Props) {
         <span className="text-sm font-bold text-white">{getRatingLabel(rating)}</span>
       </div>
 
-      <Pill label="Surf" value={`${ft.toFixed(0)}-${(ft * 1.3).toFixed(0)}`} unit="ft" />
+      <Pill label="Surf" value={`${lo}-${hi}`} unit="ft" />
 
       <div className="h-6 w-px bg-sl-border" />
 

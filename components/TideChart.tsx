@@ -74,6 +74,12 @@ export function TideChart({ lat, lng }: Props) {
     return days
   }, [lat, lng])
 
+  const filteredData = useMemo(() => {
+    const nowMs = Date.now()
+    const idx = tideData.findIndex((t) => new Date(t.time).getTime() >= nowMs)
+    return idx > 0 ? tideData.slice(idx - 1) : tideData
+  }, [tideData])
+
   if (loading) {
     return (
       <div className="rounded-lg border border-sl-border bg-sl-card p-4">
@@ -85,18 +91,18 @@ export function TideChart({ lat, lng }: Props) {
     )
   }
 
-  if (tideData.length === 0) return null
+  if (filteredData.length === 0) return null
 
-  const totalHours = tideData.length
+  const totalHours = filteredData.length
   const chartW = totalHours * PX_PER_HOUR
   const totalH = PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H
 
-  const heights = tideData.map((t) => t.height)
+  const heights = filteredData.map((t) => t.height)
   const maxH = Math.max(...heights)
   const minH = Math.min(...heights)
   const range = maxH - minH || 1
 
-  const points = tideData.map((t, i) => ({
+  const points = filteredData.map((t, i) => ({
     x: (i / Math.max(totalHours - 1, 1)) * chartW,
     y: PEAK_LABEL_H + CHART_H - ((t.height - minH) / range) * (CHART_H - 10),
     t,
@@ -108,8 +114,8 @@ export function TideChart({ lat, lng }: Props) {
   const peaks = findPeaks(points)
 
   const now = new Date()
-  const startMs = new Date(tideData[0].time).getTime()
-  const endMs = new Date(tideData[tideData.length - 1].time).getTime()
+  const startMs = new Date(filteredData[0].time).getTime()
+  const endMs = new Date(filteredData[filteredData.length - 1].time).getTime()
   const nowFrac = (now.getTime() - startMs) / (endMs - startMs)
   const nowX = nowFrac >= 0 && nowFrac <= 1 ? nowFrac * chartW : -1
 
@@ -127,7 +133,7 @@ export function TideChart({ lat, lng }: Props) {
   })
 
   const hourTicks: Array<{ x: number; label: string }> = []
-  tideData.forEach((t, i) => {
+  filteredData.forEach((t, i) => {
     const date = new Date(t.time)
     const h = date.getHours()
     if (h % 3 === 0 && h !== 0) {

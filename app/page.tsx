@@ -10,7 +10,7 @@ import {
   type CachedForecast,
 } from '@/lib/cache'
 import type { ForecastDataPoint } from '@/lib/forecast'
-import { metersToFeet, computeSurfRating, getRatingDot, getRatingBg, getRatingLabel, kmhToMph, degreesToCompass } from '@/lib/surfRating'
+import { metersToFeet, computeSurfRating, getRatingDot, getRatingBg, getRatingLabel, kmhToMph, degreesToCompass, surfHeightRange } from '@/lib/surfRating'
 import { getWeatherEmoji } from '@/lib/weatherCodes'
 
 function findClosestHour(hours: ForecastDataPoint[]): ForecastDataPoint | null {
@@ -138,8 +138,8 @@ export default function Home() {
                 const b = breakMap.get(id)
                 if (!b) return null
                 const fc = getForecast(b.clusterId)
-                const rating = fc ? computeSurfRating({ waveHeight: fc.waveHeight, swellPeriod: fc.swellPeriod, windSpeed: fc.windSpeed }) : null
-                const ft = fc ? metersToFeet(fc.waveHeight) : null
+                const rating = fc ? computeSurfRating(fc) : null
+                const range = fc ? surfHeightRange(fc.waveHeight, fc.swellPeriod) : null
 
                 return (
                   <Link
@@ -163,11 +163,11 @@ export default function Home() {
                     </div>
 
                     {/* Forecast data */}
-                    {fc && ft != null && (
+                    {fc && range && (
                       <div className="mt-3 flex items-end justify-between border-t border-sl-border/50 pt-3">
                         <div>
                           <div className="text-xl font-bold tabular-nums text-white">
-                            {ft.toFixed(0)}-{(ft * 1.3).toFixed(0)}
+                            {range.lo}-{range.hi}
                             <span className="ml-0.5 text-xs font-normal text-sl-muted">ft</span>
                           </div>
                           <div className="mt-0.5 text-[10px] text-sl-muted">

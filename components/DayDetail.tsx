@@ -1,5 +1,5 @@
 import type { ForecastDataPoint } from '@/lib/forecast'
-import { metersToFeet, celsiusToFahrenheit, kmhToMph, degreesToCompass, computeSurfRating, getRatingDot, getRatingLabel } from '@/lib/surfRating'
+import { metersToFeet, celsiusToFahrenheit, kmhToMph, degreesToCompass, computeSurfRating, getRatingDot, getRatingLabel, surfHeightRange } from '@/lib/surfRating'
 import { getWeatherEmoji, getWeatherLabel } from '@/lib/weatherCodes'
 
 interface Props {
@@ -34,8 +34,8 @@ export function DayDetail({ samples }: Props) {
         </thead>
         <tbody>
           {filtered.map((h) => {
-            const rating = computeSurfRating({ waveHeight: h.waveHeight, swellPeriod: h.swellPeriod, windSpeed: h.windSpeed })
-            const ft = metersToFeet(h.waveHeight)
+            const rating = computeSurfRating(h)
+            const { lo, hi } = surfHeightRange(h.waveHeight, h.swellPeriod)
             const time = new Date(h.time)
             return (
               <tr key={h.time} className="border-b border-sl-border/50 hover:bg-sl-surface/30">
@@ -49,7 +49,7 @@ export function DayDetail({ samples }: Props) {
                   </div>
                 </td>
                 <td className="py-2.5 text-right font-semibold text-white tabular-nums">
-                  {ft.toFixed(0)}-{(ft * 1.3).toFixed(0)} ft
+                  {lo}-{hi} ft
                 </td>
                 <td className="py-2.5 text-right text-sl-muted tabular-nums">
                   {metersToFeet(h.swellHeight).toFixed(1)}ft @ {h.swellPeriod.toFixed(0)}s

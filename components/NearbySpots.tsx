@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import type { SurfBreak } from '@/lib/breaks'
 import type { ForecastDataPoint } from '@/lib/forecast'
-import { metersToFeet, computeSurfRating, getRatingDot, getRatingLabel } from '@/lib/surfRating'
+import { computeSurfRating, getRatingDot, getRatingLabel, surfHeightRange } from '@/lib/surfRating'
 
 interface Props {
   spots: SurfBreak[]
@@ -20,9 +20,9 @@ export function NearbySpots({ spots, getForecast }: Props) {
         {spots.map((spot) => {
           const fc = getForecast(spot.clusterId)
           const rating = fc
-            ? computeSurfRating({ waveHeight: fc.waveHeight, swellPeriod: fc.swellPeriod, windSpeed: fc.windSpeed })
+            ? computeSurfRating(fc)
             : null
-          const ft = fc ? metersToFeet(fc.waveHeight) : null
+          const range = fc ? surfHeightRange(fc.waveHeight, fc.swellPeriod) : null
 
           return (
             <Link
@@ -40,9 +40,9 @@ export function NearbySpots({ spots, getForecast }: Props) {
                 <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-sl-border" />
               )}
               <span className="flex-1 truncate text-sm font-medium text-sl-text">{spot.name}</span>
-              {ft != null && (
+              {range && (
                 <span className="text-xs tabular-nums text-sl-muted">
-                  {ft.toFixed(0)}-{(ft * 1.3).toFixed(0)} ft
+                  {range.lo}-{range.hi} ft
                 </span>
               )}
             </Link>
