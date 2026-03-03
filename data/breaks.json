@@ -1,0 +1,350 @@
+[
+  {
+    "id": "cannon-beach",
+    "name": "Cannon Beach",
+    "clusterId": "north-coast",
+    "lat": 45.89,
+    "lng": -123.96,
+    "level": "beginner",
+    "features": "Beach breaks near Haystack Rock, iconic Oregon coast",
+    "webcam": {
+      "url": "https://scenic.cam/oregon_coast/cannon_beach_surf.php",
+      "embedType": "iframe",
+      "fallbackUrl": "https://www.cbcc.net/webcam.htm"
+    },
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-NW 4-8ft @ 12-16s",
+      "bestWind": "E/NE (offshore)",
+      "bestTide": "Mid to high incoming",
+      "bottom": "Sandy beach break",
+      "hazards": "Haystack Rock currents, sneaker waves, cold water",
+      "crowd": "Moderate to heavy in summer, light in winter",
+      "description": "Cannon Beach is one of Oregon's most iconic surf spots, sitting in the shadow of Haystack Rock. The beach break works on most swells and is forgiving enough for beginners while offering solid peaks for intermediates during bigger swells. The main break is south of Haystack Rock, with additional peaks stretching along the wide beach."
+    }
+  },
+  {
+    "id": "indian-beach",
+    "name": "Indian Beach",
+    "clusterId": "north-coast",
+    "lat": 45.93,
+    "lng": -123.97,
+    "level": "intermediate",
+    "features": "Ecola State Park, consistent offshore peaks, sea stacks",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Fall/Winter (Sep-Mar)",
+      "bestSwell": "W-NW 4-8ft @ 10-16s",
+      "bestWind": "E/SE (offshore)",
+      "bestTide": "Low to mid",
+      "bottom": "Sand and rock reef",
+      "hazards": "Rocky shoreline, strong currents, sea stacks, difficult access",
+      "crowd": "Light to moderate",
+      "description": "Indian Beach in Ecola State Park offers some of the most consistent surf on Oregon's north coast. Protected by the headland, it picks up swell from multiple directions. The rock-sand bottom creates defined peaks that are more powerful than neighboring beach breaks. The hike in keeps crowds manageable."
+    }
+  },
+  {
+    "id": "short-sands",
+    "name": "Short Sands",
+    "clusterId": "short-sands",
+    "lat": 45.76,
+    "lng": -123.96,
+    "level": "beginner",
+    "features": "Oswald West State Park, horseshoe bay protected from NW winds",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Year-round (best Sep-Apr)",
+      "bestSwell": "W-WNW 3-8ft @ 10-16s",
+      "bestWind": "E/NE (offshore) — protected from NW winds",
+      "bestTide": "All tides, best at mid",
+      "bottom": "Sandy beach break in a cove",
+      "hazards": "Rocks on south side, cold water, 15-min hike in",
+      "crowd": "Can get very crowded on good days",
+      "description": "Short Sands (Shorty's) at Oswald West State Park is arguably Oregon's most popular surf break. Nestled in a horseshoe-shaped cove, it's protected from prevailing NW winds and catches plenty of swell. The sandy bottom and mellow waves make it ideal for beginners and longboarders, though it can produce head-high+ waves during winter swells. The 15-minute hike through old-growth forest adds to the magic."
+    }
+  },
+  {
+    "id": "manzanita",
+    "name": "Manzanita",
+    "clusterId": "manzanita-oceanside",
+    "lat": 45.72,
+    "lng": -123.94,
+    "level": "intermediate",
+    "features": "Beach break with scenic coastal town",
+    "webcam": {
+      "url": "https://www.oceaninnatmanzanita.com/oregon-coast-webcam/",
+      "embedType": "link",
+      "fallbackUrl": "https://www.oceaninnatmanzanita.com/oregon-coast-webcam/"
+    },
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-NW 4-8ft @ 10-14s",
+      "bestWind": "E/SE (offshore)",
+      "bestTide": "Low to mid incoming",
+      "bottom": "Sandy beach break",
+      "hazards": "Strong currents, sneaker waves, cold water",
+      "crowd": "Light",
+      "description": "Manzanita offers a long stretch of exposed beach break that picks up plenty of swell. It's less protected than Short Sands, so wind is more of a factor, but when conditions align it can deliver fun, punchy peaks. The quaint town of Manzanita makes for a great surf trip base."
+    }
+  },
+  {
+    "id": "oceanside",
+    "name": "Oceanside",
+    "clusterId": "manzanita-oceanside",
+    "lat": 45.46,
+    "lng": -123.97,
+    "level": "intermediate",
+    "features": "Tunnel to secret beach, varied breaks",
+    "webcam": {
+      "url": "http://www.virtual-oceanside.com/surf_cam.asp",
+      "embedType": "iframe",
+      "fallbackUrl": "http://www.virtual-oceanside.com/surf_cam.asp"
+    },
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-NW 3-6ft @ 10-14s",
+      "bestWind": "E (offshore)",
+      "bestTide": "Mid",
+      "bottom": "Sand over rock",
+      "hazards": "Rocky bottom, strong currents at tunnel beach",
+      "crowd": "Light",
+      "description": "Oceanside is a picturesque small village with a beach break that works best on mid-sized W-NW swells. The main beach faces west and picks up plenty of swell. A tunnel through the cliff leads to a more sheltered beach on the south side. The rock-sand bottom can produce wedgy waves."
+    }
+  },
+  {
+    "id": "pacific-city",
+    "name": "Pacific City / Cape Kiwanda",
+    "clusterId": "pacific-city",
+    "lat": 45.22,
+    "lng": -123.97,
+    "level": "mixed",
+    "features": "Sandy-bottom breaks for beginners, point breaks for advanced",
+    "webcam": {
+      "url": "http://webcam.pacificcity.org/",
+      "embedType": "iframe",
+      "fallbackUrl": "https://capekiwandarvresort.com/"
+    },
+    "guide": {
+      "bestSeason": "Year-round",
+      "bestSwell": "W-NW 3-8ft @ 10-16s",
+      "bestWind": "E/SE (offshore)",
+      "bestTide": "All tides",
+      "bottom": "Sandy beach with sandstone headland",
+      "hazards": "Shore break, Cape Kiwanda cliffs, dory boats launching",
+      "crowd": "Moderate",
+      "description": "Pacific City at Cape Kiwanda is one of Oregon's most versatile surf spots. The beach break south of the cape is gentle and great for beginners, while the area closer to the sandstone headland produces steeper, more powerful waves. The dory fleet launches off the beach — give them right of way. The Pelican Pub sits right on the beach for post-surf refreshments."
+    }
+  },
+  {
+    "id": "lincoln-city",
+    "name": "Lincoln City",
+    "clusterId": "lincoln-city",
+    "lat": 44.97,
+    "lng": -124.02,
+    "level": "mixed",
+    "features": "Long stretch of beach, Road's End popular",
+    "webcam": {
+      "url": "http://www.lcsurfshop.com/webcam.htm",
+      "embedType": "iframe",
+      "fallbackUrl": "http://www.lcsurfshop.com/webcam.htm"
+    },
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-NW 4-8ft @ 10-16s",
+      "bestWind": "E (offshore)",
+      "bestTide": "Mid incoming",
+      "bottom": "Sandy beach break",
+      "hazards": "Sneaker waves, strong currents, cold water",
+      "crowd": "Moderate",
+      "description": "Lincoln City's seven miles of beach offer numerous peaks to choose from. Road's End at the north end is the most popular surf spot, partially protected by the headland. The D River access in the middle of town and the beaches near Taft also produce quality waves. Lincoln City Surf Shop is the local hub for conditions info."
+    }
+  },
+  {
+    "id": "nelscott-reef",
+    "name": "Nelscott Reef",
+    "clusterId": "lincoln-city",
+    "lat": 44.99,
+    "lng": -124.02,
+    "level": "advanced",
+    "features": "Big wave spot, hosts competitions",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Winter (Dec-Feb)",
+      "bestSwell": "W-NW 15-25ft+ @ 16-20s",
+      "bestWind": "E/NE (offshore) — light winds critical",
+      "bestTide": "Mid to high",
+      "bottom": "Deep water reef",
+      "hazards": "Extremely dangerous, tow-in only, hold-downs, cold water, rocks",
+      "crowd": "Experts only — very light",
+      "description": "Nelscott Reef is Oregon's premier big wave spot, located about half a mile offshore from Lincoln City. It breaks on deep-water reef at 25-40+ feet and is strictly a tow-in affair. The reef was rediscovered in 2003 and has since hosted invitational big wave competitions. Only for experienced big wave surfers with proper safety teams."
+    }
+  },
+  {
+    "id": "otter-rock",
+    "name": "Otter Rock",
+    "clusterId": "newport-otter",
+    "lat": 44.74,
+    "lng": -124.07,
+    "level": "beginner",
+    "features": "Partially protected from NW winds, consistent",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Year-round",
+      "bestSwell": "W-NW 3-6ft @ 10-14s",
+      "bestWind": "E/SE (offshore)",
+      "bestTide": "Mid to high",
+      "bottom": "Sand and cobblestone",
+      "hazards": "Rocky entry, cobblestones, cold water",
+      "crowd": "Light to moderate",
+      "description": "Otter Rock (Devil's Punchbowl) offers a partially protected cove that picks up swell consistently. The cobblestone-sand bottom creates fun peaks that are manageable for beginners on smaller days. The main break is in the cove south of Devil's Punchbowl. Access is easy from the parking lot."
+    }
+  },
+  {
+    "id": "newport",
+    "name": "South Beach / Newport",
+    "clusterId": "newport-otter",
+    "lat": 44.64,
+    "lng": -124.06,
+    "level": "beginner",
+    "features": "Gentle beach break, South Beach State Park",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-NW 4-8ft @ 10-14s",
+      "bestWind": "E (offshore)",
+      "bestTide": "Low to mid",
+      "bottom": "Sandy beach break",
+      "hazards": "Jetty currents, sneaker waves, cold water",
+      "crowd": "Light",
+      "description": "South Beach in Newport is a long, exposed beach break south of the Yaquina Bay jetty. The jetty provides some protection and can create sandbars that focus the swell. South Beach State Park offers easy access and parking. Newport's aquarium and bayfront are nearby for non-surfing family members."
+    }
+  },
+  {
+    "id": "florence",
+    "name": "Florence South Jetty",
+    "clusterId": "central-south",
+    "lat": 43.98,
+    "lng": -124.11,
+    "level": "all",
+    "features": "Siuslaw River meets Pacific, gentle break for longboards",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-NW 4-8ft @ 10-16s",
+      "bestWind": "E (offshore)",
+      "bestTide": "Mid incoming",
+      "bottom": "Sandy beach with jetty",
+      "hazards": "Jetty currents, river mouth currents, sneaker waves",
+      "crowd": "Very light",
+      "description": "Florence South Jetty sits where the Siuslaw River meets the Pacific Ocean. The jetty creates sandbars that produce fun, mellow waves ideal for longboarding. It can handle bigger swells too, when the sandbar is right. The Oregon Dunes stretch south from here. Access is from South Jetty Road."
+    }
+  },
+  {
+    "id": "coos-bay",
+    "name": "Coos Bay",
+    "clusterId": "south-coast",
+    "lat": 43.37,
+    "lng": -124.22,
+    "level": "intermediate",
+    "features": "Varied breaks along the bay",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-NW 4-8ft @ 10-14s",
+      "bestWind": "E/NE (offshore)",
+      "bestTide": "Mid",
+      "bottom": "Sand and rock",
+      "hazards": "Strong currents, rocky areas, cold water, isolated",
+      "crowd": "Very light",
+      "description": "Coos Bay area offers several beach breaks along Bastendorff Beach and nearby shores. Bastendorff Beach, just west of the bay mouth, is the most accessible and consistent. The jetty at the bay entrance can create quality sandbars. This is uncrowded surf territory with a rugged, remote feel."
+    }
+  },
+  {
+    "id": "bandon",
+    "name": "Bandon",
+    "clusterId": "south-coast",
+    "lat": 43.12,
+    "lng": -124.42,
+    "level": "intermediate",
+    "features": "Face Rock, scenic coastline",
+    "webcam": {
+      "url": "http://www.oregontravels.com/bandon/cam01_bandon.html",
+      "embedType": "iframe",
+      "fallbackUrl": "http://www.oregontravels.com/bandon/cam01_bandon.html"
+    },
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-SW 4-8ft @ 10-14s",
+      "bestWind": "E/NE (offshore)",
+      "bestTide": "Mid to high",
+      "bottom": "Sand with rock outcroppings",
+      "hazards": "Rocks, sea stacks, cold water, isolated",
+      "crowd": "Very light",
+      "description": "Bandon's beach is one of Oregon's most scenic surf spots, with dramatic sea stacks including iconic Face Rock. The beach break between the rocks can produce quality waves, especially on S-SW swells that other north coast spots miss. The town of Bandon (Old Town) has a charming coastal vibe. Bullards Beach State Park is nearby."
+    }
+  },
+  {
+    "id": "gold-beach",
+    "name": "Gold Beach",
+    "clusterId": "south-coast",
+    "lat": 42.42,
+    "lng": -124.42,
+    "level": "intermediate",
+    "features": "Rogue River mouth, southern Oregon",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-SW 4-8ft @ 10-14s",
+      "bestWind": "E/NE (offshore)",
+      "bestTide": "Mid",
+      "bottom": "Sandy beach break near river mouth",
+      "hazards": "River currents, sneaker waves, isolated, cold water",
+      "crowd": "Very light",
+      "description": "Gold Beach sits at the mouth of the Rogue River in southern Oregon. The beach break north of the river mouth picks up both W and SW swells. The river mouth creates shifting sandbars that can produce quality peaks. This is remote, uncrowded surfing — you may have the lineup to yourself."
+    }
+  },
+  {
+    "id": "brookings",
+    "name": "Brookings",
+    "clusterId": "south-coast",
+    "lat": 42.05,
+    "lng": -124.27,
+    "level": "intermediate",
+    "features": "Oregon's southernmost break, warmer water",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-NW 4-8ft @ 10-14s",
+      "bestWind": "E/NE (offshore)",
+      "bestTide": "Mid",
+      "bottom": "Sand and cobblestone",
+      "hazards": "Rocky areas, strong currents, isolated",
+      "crowd": "Very light",
+      "description": "Brookings is Oregon's southernmost surf spot, just north of the California border. The beach breaks around the Chetco River mouth offer the state's warmest water temperatures due to a unique microclimate. Harris Beach State Park has several accessible breaks. The banana belt climate makes this a relatively pleasant cold-water surf destination."
+    }
+  },
+  {
+    "id": "rockaway-beach",
+    "name": "Rockaway Beach",
+    "clusterId": "north-coast",
+    "lat": 45.61,
+    "lng": -123.94,
+    "level": "beginner",
+    "features": "Visitor Center area, family-friendly",
+    "webcam": {
+      "url": "https://www.rockawaybeach.net/live-feed",
+      "embedType": "link",
+      "fallbackUrl": "https://www.rockawaybeach.net/live-feed"
+    },
+    "guide": {
+      "bestSeason": "Fall/Winter (Oct-Mar)",
+      "bestSwell": "W-NW 3-6ft @ 10-14s",
+      "bestWind": "E (offshore)",
+      "bestTide": "Mid incoming",
+      "bottom": "Sandy beach break",
+      "hazards": "Sneaker waves, cold water",
+      "crowd": "Light",
+      "description": "Rockaway Beach is a family-friendly seven-mile stretch of sand on Oregon's north coast. The gentle beach break is perfect for beginners and longboarders. Multiple access points along the town make it easy to find a peak to yourself. The Twin Rocks offshore provide a scenic backdrop."
+    }
+  }
+]
