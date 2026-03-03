@@ -13,6 +13,19 @@ export function SwellChart({ hours }: Props) {
   const containerRef = useRef<HTMLDivElement>(null!)
   const [containerW, setContainerW] = useState(0)
 
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current
+    if (!container) return
+    const svg = container.querySelector('svg')
+    if (!svg) return
+    const rect = svg.getBoundingClientRect()
+    const x = e.clientX - rect.left + container.scrollLeft
+    const step = containerW > 0 ? containerW / Math.max(Math.floor(hours.length / 3), 1) : 10
+    const idx = Math.round(x / step)
+    const len = Math.floor(hours.length / 3)
+    setHoverIdx(Math.max(0, Math.min(idx, len - 1)))
+  }, [containerW, hours.length])
+
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
@@ -73,17 +86,6 @@ export function SwellChart({ hours }: Props) {
   const hov = hoverIdx != null ? bars[hoverIdx] : null
 
   const labelEvery = Math.max(1, Math.round(sampled.length / 12))
-
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const container = containerRef.current
-    if (!container) return
-    const svg = container.querySelector('svg')
-    if (!svg) return
-    const rect = svg.getBoundingClientRect()
-    const x = e.clientX - rect.left + container.scrollLeft
-    const idx = Math.round(x / step)
-    setHoverIdx(Math.max(0, Math.min(idx, sampled.length - 1)))
-  }, [step, sampled.length])
 
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">
