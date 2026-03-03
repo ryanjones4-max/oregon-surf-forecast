@@ -214,7 +214,7 @@ export default function SurfReportPage() {
                 collapsed={chartsCollapsed['tide']}
                 onToggle={() => toggleChart('tide')}
               >
-                <TideChart lat={spot.lat} lng={spot.lng} />
+                <TideChart lat={spot.lat} lng={spot.lng} hours={allHours} />
               </CollapsibleSection>
 
               {/* Weather Strip */}

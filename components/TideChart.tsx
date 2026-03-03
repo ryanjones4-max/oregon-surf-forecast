@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useMemo, useCallback } from 'react'
+import type { ForecastDataPoint } from '@/lib/forecast'
 import { calculateSunTimes } from '@/lib/sun'
-import { useSharedCrosshair, useSyncedScroll, PX_PER_STEP } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
 
 interface TidePoint {
   time: string
@@ -12,6 +13,7 @@ interface TidePoint {
 interface Props {
   lat: number
   lng: number
+  hours: ForecastDataPoint[]
 }
 
 interface PeakLabel {
@@ -26,34 +28,31 @@ const CHART_H = 100
 const PEAK_LABEL_H = 40
 const TIME_AXIS_H = 18
 const SUN_ROW_H = 38
-const FORECAST_DAYS = 10
 
-export function TideChart({ lat, lng }: Props) {
-  const [tideData, setTideData] = useState<TidePoint[]>([])
-  const [loading, setLoading] = useState(true)
+export function TideChart({ lat, lng, hours }: Props) {
   const { hoverTime, setHoverTime } = useSharedCrosshair()
   const { containerRef, onScroll } = useSyncedScroll()
 
-  useEffect(() => {
-    setTideData(generateSyntheticTides(FORECAST_DAYS, lat))
-    setLoading(false)
-  }, [lat, lng])
+  const sampled = useMemo(() => {
+    if (hours.length === 0) return []
+    return hours
+      .filter((_, i) => i % 3 === 0)
+      .map((h) => ({
+        time: h.time,
+        height: generateTideApprox(h.time, lat),
+      }))
+  }, [hours, lat])
 
   const sunData = useMemo(() => {
     const days: Array<{ date: Date; sun: ReturnType<typeof calculateSunTimes> }> = []
     const start = new Date()
     start.setHours(0, 0, 0, 0)
-    for (let d = 0; d < FORECAST_DAYS; d++) {
+    for (let d = 0; d < 10; d++) {
       const date = new Date(start.getTime() + d * 86400000)
       days.push({ date, sun: calculateSunTimes(lat, lng, date) })
     }
     return days
   }, [lat, lng])
-
-  const sampled3h = useMemo(() => {
-    if (tideData.length === 0) return []
-    return tideData.filter((_, i) => i % 3 === 0)
-  }, [tideData])
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const container = containerRef.current
@@ -62,37 +61,26 @@ export function TideChart({ lat, lng }: Props) {
     if (!svg) return
     const svgRect = svg.getBoundingClientRect()
     const x = e.clientX - svgRect.left + container.scrollLeft
-    if (sampled3h.length < 2) return
+    if (sampled.length < 2) return
     const idx = Math.round(x / PX_PER_STEP)
-    const clamped = Math.max(0, Math.min(idx, sampled3h.length - 1))
-    setHoverTime(sampled3h[clamped].time)
-  }, [sampled3h, setHoverTime])
+    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
+    setHoverTime(sampled[clamped].time)
+  }, [sampled, setHoverTime, containerRef])
 
   const handlePointerLeave = useCallback(() => { setHoverTime(null) }, [setHoverTime])
 
-  if (loading) {
-    return (
-      <div className="rounded-lg border border-sl-border bg-sl-card p-4">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-sl-muted">Tides</h3>
-        <div className="flex h-[140px] items-center justify-center">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-sl-accent border-t-transparent" />
-        </div>
-      </div>
-    )
-  }
-
-  if (sampled3h.length === 0) return null
+  if (sampled.length === 0) return null
 
   const step = PX_PER_STEP
-  const chartW = sampled3h.length * step
+  const chartW = sampled.length * step
   const totalH = PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H
 
-  const heights = sampled3h.map((t) => t.height)
+  const heights = sampled.map((t) => t.height)
   const maxH = Math.max(...heights)
   const minH = Math.min(...heights)
   const range = maxH - minH || 1
 
-  const points = sampled3h.map((t, i) => ({
+  const points = sampled.map((t, i) => ({
     x: i * step + step / 2,
     y: PEAK_LABEL_H + CHART_H - ((t.height - minH) / range) * (CHART_H - 10),
     t,
@@ -103,8 +91,8 @@ export function TideChart({ lat, lng }: Props) {
   const peaks = findPeaks(points)
 
   const now = new Date()
-  const startMs = new Date(sampled3h[0].time).getTime()
-  const endMs = new Date(sampled3h[sampled3h.length - 1].time).getTime()
+  const startMs = new Date(sampled[0].time).getTime()
+  const endMs = new Date(sampled[sampled.length - 1].time).getTime()
   const nowFrac = (now.getTime() - startMs) / (endMs - startMs)
   const nowX = nowFrac >= 0 && nowFrac <= 1 ? nowFrac * chartW : -1
 
@@ -122,17 +110,17 @@ export function TideChart({ lat, lng }: Props) {
   })
 
   const hourTicks: Array<{ x: number; label: string }> = []
-  sampled3h.forEach((t, i) => {
+  sampled.forEach((t, i) => {
     const date = new Date(t.time)
-    const h = date.getHours()
+    const h = date.getUTCHours()
     if (h % 6 === 0 && h !== 0) {
       const label = h > 12 ? String(h - 12) : String(h)
       hourTicks.push({ x: points[i].x, label })
     }
   })
 
-  const hoveredIdx = hoverTime ? findClosestIdx(sampled3h, hoverTime) : null
-  const hovered = hoveredIdx != null ? points[hoveredIdx] : null
+  const hoverIdx = resolveHoverIdx(sampled, hoverTime)
+  const hovered = hoverIdx != null ? points[hoverIdx] : null
 
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">
@@ -173,7 +161,7 @@ export function TideChart({ lat, lng }: Props) {
           {/* Peak labels */}
           {peaks.map((pk, i) => {
             const date = new Date(pk.time)
-            const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Los_Angeles' })
+            const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
             const isHigh = pk.type === 'high'
             const baseY = isHigh ? pk.y - 8 : pk.y + 14
             return (
@@ -231,7 +219,7 @@ export function TideChart({ lat, lng }: Props) {
                 <div style={{ background: 'rgba(18,18,18,0.95)', border: '1px solid rgba(51,51,51,0.8)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', lineHeight: '1.5', color: '#d4d4d4', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
                   <div style={{ fontWeight: 600 }}>{hovered.t.height.toFixed(2)} ft</div>
                   <div style={{ color: '#858585', fontSize: '10px' }}>
-                    {new Date(hovered.t.time).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles' })}
+                    {new Date(hovered.t.time).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}
                   </div>
                 </div>
               </foreignObject>
@@ -261,17 +249,6 @@ function buildSmoothPath(points: Array<{ x: number; y: number }>): string {
   return d
 }
 
-function findClosestIdx(sampled: TidePoint[], targetTime: string): number {
-  const targetMs = new Date(targetTime).getTime()
-  let best = 0
-  let bestDiff = Infinity
-  for (let i = 0; i < sampled.length; i++) {
-    const diff = Math.abs(new Date(sampled[i].time).getTime() - targetMs)
-    if (diff < bestDiff) { bestDiff = diff; best = i }
-  }
-  return best
-}
-
 function findPeaks(points: Array<{ x: number; y: number; t: TidePoint }>): PeakLabel[] {
   const peaks: PeakLabel[] = []
   const minGap = 55
@@ -293,15 +270,4 @@ function generateTideApprox(timeStr: string, lat: number): number {
   const meanLevel = 4.5
   const amplitude = 3.0 + 0.8 * Math.cos((2 * Math.PI * t) / springNeapPeriod)
   return meanLevel + amplitude * Math.cos((2 * Math.PI * t) / lunarPeriod + lat * 0.01)
-}
-
-function generateSyntheticTides(days: number, lat: number): TidePoint[] {
-  const points: TidePoint[] = []
-  const now = new Date()
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0))
-  for (let h = 0; h < days * 24; h++) {
-    const t = new Date(start.getTime() + h * 3600000)
-    points.push({ time: t.toISOString(), height: generateTideApprox(t.toISOString(), lat) })
-  }
-  return points
 }
