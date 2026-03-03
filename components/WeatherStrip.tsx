@@ -1,17 +1,31 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { celsiusToFahrenheit } from '@/lib/surfRating'
 import { getWeatherEmoji } from '@/lib/weatherCodes'
+import { useSharedCrosshair } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
 }
 
+function resolveHoverIdx(sampled: ForecastDataPoint[], hoverTime: string | null): number | null {
+  if (!hoverTime || sampled.length === 0) return null
+  const target = new Date(hoverTime).getTime()
+  let best = 0
+  let bestDiff = Infinity
+  for (let i = 0; i < sampled.length; i++) {
+    const diff = Math.abs(new Date(sampled[i].time).getTime() - target)
+    if (diff < bestDiff) { bestDiff = diff; best = i }
+  }
+  return best
+}
+
 export function WeatherStrip({ hours }: Props) {
   const containerRef = useRef<HTMLDivElement>(null!)
   const [containerW, setContainerW] = useState(0)
+  const { hoverTime, setHoverTime } = useSharedCrosshair()
 
   useEffect(() => {
     const el = containerRef.current
@@ -27,6 +41,7 @@ export function WeatherStrip({ hours }: Props) {
   if (hours.length === 0) return null
 
   const sampled = hours.filter((_, i) => i % 3 === 0)
+  const hoverIdx = resolveHoverIdx(sampled, hoverTime)
 
   const colW = containerW > 0 ? containerW / sampled.length : 52
   const needsScroll = containerW > 0 && colW < 40
@@ -51,6 +66,22 @@ export function WeatherStrip({ hours }: Props) {
     }
   })
 
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current
+    if (!container) return
+    const scrollEl = container.querySelector('[data-weather-cols]') as HTMLElement | null
+    const targetEl = scrollEl ?? container
+    const rect = targetEl.getBoundingClientRect()
+    const x = e.clientX - rect.left + (scrollEl?.parentElement?.scrollLeft ?? 0)
+    const idx = Math.floor(x / effectiveColW)
+    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
+    setHoverTime(sampled[clamped].time)
+  }, [effectiveColW, sampled, setHoverTime])
+
+  const handlePointerLeave = useCallback(() => {
+    setHoverTime(null)
+  }, [setHoverTime])
+
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">
       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-sl-muted">
@@ -59,10 +90,12 @@ export function WeatherStrip({ hours }: Props) {
       <div
         ref={containerRef}
         className={needsScroll ? 'overflow-x-auto touch-pan-x' : 'w-full'}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
       >
         {containerW > 0 && (
           <div style={{ width: needsScroll ? totalW : '100%' }}>
-            {/* Date header row — one label centered per day */}
+            {/* Date header row */}
             <div className="relative flex mb-1.5">
               {daySpans.map((span, i) => {
                 const spanCols = span.endIdx - span.startIdx
@@ -83,9 +116,10 @@ export function WeatherStrip({ hours }: Props) {
             </div>
 
             {/* Time / icon / temp columns */}
-            <div className="relative flex">
+            <div className="relative flex" data-weather-cols>
               {sampled.map((h, i) => {
                 const isDayBoundary = dayBoundaries.includes(i)
+                const isHov = hoverIdx === i
                 const date = new Date(h.time)
                 const hour = date.getHours()
                 const timeLabel = hour === 0 ? '12am' : hour < 12 ? `${hour}am` : hour === 12 ? '12pm' : `${hour - 12}pm`
@@ -95,11 +129,13 @@ export function WeatherStrip({ hours }: Props) {
                 return (
                   <div
                     key={i}
-                    className="flex flex-col items-center"
+                    className="flex flex-col items-center transition-colors"
                     style={{
                       width: effectiveColW,
                       flexShrink: 0,
                       borderLeft: isDayBoundary ? '1px solid #333333' : 'none',
+                      backgroundColor: isHov ? 'rgba(212,212,212,0.08)' : 'transparent',
+                      borderRadius: isHov ? '4px' : '0',
                     }}
                   >
                     <span className="text-[9px] text-sl-muted tabular-nums">{timeLabel}</span>

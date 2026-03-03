@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { kmhToMph, degreesToCompass } from '@/lib/surfRating'
+import { useSharedCrosshair } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -24,8 +25,20 @@ function windLabel(speed: number): string {
   return 'Howling'
 }
 
+function resolveHoverIdx(sampled: ForecastDataPoint[], hoverTime: string | null): number | null {
+  if (!hoverTime || sampled.length === 0) return null
+  const target = new Date(hoverTime).getTime()
+  let best = 0
+  let bestDiff = Infinity
+  for (let i = 0; i < sampled.length; i++) {
+    const diff = Math.abs(new Date(sampled[i].time).getTime() - target)
+    if (diff < bestDiff) { bestDiff = diff; best = i }
+  }
+  return best
+}
+
 export function WindGraph({ hours }: Props) {
-  const [hoverIdx, setHoverIdx] = useState<number | null>(null)
+  const { hoverTime, setHoverTime } = useSharedCrosshair()
   const containerRef = useRef<HTMLDivElement>(null!)
   const [containerW, setContainerW] = useState(0)
 
@@ -84,6 +97,7 @@ export function WindGraph({ hours }: Props) {
     }
   })
 
+  const hoverIdx = resolveHoverIdx(sampled, hoverTime)
   const hov = hoverIdx != null ? bars[hoverIdx] : null
 
   const labelEvery = Math.max(1, Math.round(sampled.length / 12))
@@ -96,8 +110,13 @@ export function WindGraph({ hours }: Props) {
     const rect = svg.getBoundingClientRect()
     const x = e.clientX - rect.left + container.scrollLeft
     const idx = Math.round(x / step)
-    setHoverIdx(Math.max(0, Math.min(idx, sampled.length - 1)))
-  }, [step, sampled.length])
+    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
+    setHoverTime(sampled[clamped].time)
+  }, [step, sampled, setHoverTime])
+
+  const handlePointerLeave = useCallback(() => {
+    setHoverTime(null)
+  }, [setHoverTime])
 
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">
@@ -121,7 +140,7 @@ export function WindGraph({ hours }: Props) {
         ref={containerRef}
         className="w-full"
         onPointerMove={handlePointerMove}
-        onPointerLeave={() => setHoverIdx(null)}
+        onPointerLeave={handlePointerLeave}
       >
         {containerW > 0 && (
           <svg width={chartW} height={totalH} className="w-full select-none">

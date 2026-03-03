@@ -1,30 +1,18 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { metersToFeet, degreesToCompass, computeSurfRating, getRatingDot, getRatingLabel, estimateBreakingHeight, surfHeightRange } from '@/lib/surfRating'
+import { useSharedCrosshair } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
 }
 
 export function SwellChart({ hours }: Props) {
-  const [hoverIdx, setHoverIdx] = useState<number | null>(null)
+  const { hoverTime, setHoverTime } = useSharedCrosshair()
   const containerRef = useRef<HTMLDivElement>(null!)
   const [containerW, setContainerW] = useState(0)
-
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const container = containerRef.current
-    if (!container) return
-    const svg = container.querySelector('svg')
-    if (!svg) return
-    const rect = svg.getBoundingClientRect()
-    const x = e.clientX - rect.left + container.scrollLeft
-    const step = containerW > 0 ? containerW / Math.max(Math.floor(hours.length / 3), 1) : 10
-    const idx = Math.round(x / step)
-    const len = Math.floor(hours.length / 3)
-    setHoverIdx(Math.max(0, Math.min(idx, len - 1)))
-  }, [containerW, hours.length])
 
   useEffect(() => {
     const el = containerRef.current
@@ -84,9 +72,26 @@ export function SwellChart({ hours }: Props) {
     }
   })
 
+  const hoverIdx = resolveHoverIdx(sampled, hoverTime)
   const hov = hoverIdx != null ? bars[hoverIdx] : null
 
   const labelEvery = Math.max(1, Math.round(sampled.length / 12))
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current
+    if (!container) return
+    const svg = container.querySelector('svg')
+    if (!svg) return
+    const rect = svg.getBoundingClientRect()
+    const x = e.clientX - rect.left + container.scrollLeft
+    const idx = Math.round(x / step)
+    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
+    setHoverTime(sampled[clamped].time)
+  }, [step, sampled, setHoverTime])
+
+  const handlePointerLeave = useCallback(() => {
+    setHoverTime(null)
+  }, [setHoverTime])
 
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">
@@ -120,7 +125,7 @@ export function SwellChart({ hours }: Props) {
         ref={containerRef}
         className="w-full"
         onPointerMove={handlePointerMove}
-        onPointerLeave={() => setHoverIdx(null)}
+        onPointerLeave={handlePointerLeave}
       >
         {containerW > 0 && (
           <svg width={chartW} height={totalH} className="w-full select-none">
@@ -224,4 +229,16 @@ export function SwellChart({ hours }: Props) {
       </div>
     </div>
   )
+}
+
+function resolveHoverIdx(sampled: ForecastDataPoint[], hoverTime: string | null): number | null {
+  if (!hoverTime || sampled.length === 0) return null
+  const target = new Date(hoverTime).getTime()
+  let best = 0
+  let bestDiff = Infinity
+  for (let i = 0; i < sampled.length; i++) {
+    const diff = Math.abs(new Date(sampled[i].time).getTime() - target)
+    if (diff < bestDiff) { bestDiff = diff; best = i }
+  }
+  return best
 }

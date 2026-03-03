@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { calculateSunTimes } from '@/lib/sun'
-import { useCrosshair, ChartTooltip } from './ChartCrosshair'
+import { useSharedCrosshair } from './ChartCrosshair'
 
 interface TidePoint {
   time: string
@@ -31,7 +31,8 @@ const SUN_ROW_H = 38
 export function TideChart({ lat, lng }: Props) {
   const [tideData, setTideData] = useState<TidePoint[]>([])
   const [loading, setLoading] = useState(true)
-  const { crosshair, containerRef, handlePointerMove, handlePointerLeave } = useCrosshair()
+  const { hoverTime, setHoverTime } = useSharedCrosshair()
+  const containerRef = useRef<HTMLDivElement>(null!)
 
   useEffect(() => {
     async function fetchTides() {
@@ -79,6 +80,25 @@ export function TideChart({ lat, lng }: Props) {
     const idx = tideData.findIndex((t) => new Date(t.time).getTime() >= nowMs)
     return idx > 0 ? tideData.slice(idx - 1) : tideData
   }, [tideData])
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current
+    if (!container) return
+    const svg = container.querySelector('svg')
+    if (!svg) return
+    const svgRect = svg.getBoundingClientRect()
+    const x = e.clientX - svgRect.left + container.scrollLeft
+    if (filteredData.length < 2) return
+    const totalHours = filteredData.length
+    const chartW = totalHours * PX_PER_HOUR
+    const frac = Math.max(0, Math.min(1, x / chartW))
+    const idx = Math.round(frac * (filteredData.length - 1))
+    setHoverTime(filteredData[idx].time)
+  }, [filteredData, setHoverTime])
+
+  const handlePointerLeave = useCallback(() => {
+    setHoverTime(null)
+  }, [setHoverTime])
 
   if (loading) {
     return (
@@ -142,7 +162,7 @@ export function TideChart({ lat, lng }: Props) {
     }
   })
 
-  const hovered = crosshair.visible ? findClosestPoint(points, crosshair.x) : null
+  const hovered = hoverTime ? findClosestPointByTime(points, hoverTime) : null
 
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">
@@ -163,7 +183,7 @@ export function TideChart({ lat, lng }: Props) {
             </linearGradient>
           </defs>
 
-          {/* Day dividers — full-height subtle lines */}
+          {/* Day dividers */}
           {daySpans.map((d, i) => i > 0 && (
             <line key={`div-${i}`} x1={d.x} y1={PEAK_LABEL_H} x2={d.x} y2={PEAK_LABEL_H + CHART_H} stroke="#333333" strokeWidth="0.5" />
           ))}
@@ -201,7 +221,7 @@ export function TideChart({ lat, lng }: Props) {
             )
           })}
 
-          {/* Hour tick marks along x-axis */}
+          {/* Hour tick marks */}
           {hourTicks.map((tick, i) => (
             <g key={`tick-${i}`}>
               <line x1={tick.x} y1={PEAK_LABEL_H + CHART_H} x2={tick.x} y2={PEAK_LABEL_H + CHART_H + 4} stroke="#404040" strokeWidth="0.5" />
@@ -219,10 +239,10 @@ export function TideChart({ lat, lng }: Props) {
             const sunY = PEAK_LABEL_H + CHART_H + TIME_AXIS_H
 
             const items = [
-              { label: 'First light', time: sun.firstLight, icon: '☀' as const, dim: true },
-              { label: 'Sunrise', time: sun.sunrise, icon: '☀' as const, dim: false },
-              { label: 'Sunset', time: sun.sunset, icon: '☀' as const, dim: false },
-              { label: 'Last light', time: sun.lastLight, icon: '☀' as const, dim: true },
+              { label: 'First light', time: sun.firstLight, dim: true },
+              { label: 'Sunrise', time: sun.sunrise, dim: false },
+              { label: 'Sunset', time: sun.sunset, dim: false },
+              { label: 'Last light', time: sun.lastLight, dim: true },
             ]
             const slotW = w / items.length
             if (slotW < 30) return null
@@ -250,12 +270,30 @@ export function TideChart({ lat, lng }: Props) {
 
           {/* Hover crosshair */}
           {hovered && (
-            <ChartTooltip x={hovered.x} chartH={PEAK_LABEL_H + CHART_H}>
-              <div style={{ fontWeight: 600 }}>{hovered.t.height.toFixed(2)} ft</div>
-              <div style={{ color: '#858585', fontSize: '10px' }}>
-                {new Date(hovered.t.time).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles' })}
-              </div>
-            </ChartTooltip>
+            <g>
+              <line x1={hovered.x} y1={PEAK_LABEL_H} x2={hovered.x} y2={PEAK_LABEL_H + CHART_H} stroke="#d4d4d4" strokeWidth="1" opacity="0.3" />
+              <circle cx={hovered.x} cy={hovered.y} r="4" fill="#858585" stroke="#121212" strokeWidth="2" />
+              <foreignObject x={hovered.x + 8} y={PEAK_LABEL_H + 4} width="130" height="50" overflow="visible">
+                <div
+                  style={{
+                    background: 'rgba(18,18,18,0.95)',
+                    border: '1px solid rgba(51,51,51,0.8)',
+                    borderRadius: '6px',
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    lineHeight: '1.5',
+                    color: '#d4d4d4',
+                    whiteSpace: 'nowrap',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <div style={{ fontWeight: 600 }}>{hovered.t.height.toFixed(2)} ft</div>
+                  <div style={{ color: '#858585', fontSize: '10px' }}>
+                    {new Date(hovered.t.time).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles' })}
+                  </div>
+                </div>
+              </foreignObject>
+            </g>
           )}
         </svg>
       </div>
@@ -284,12 +322,13 @@ function buildSmoothPath(points: Array<{ x: number; y: number }>): string {
   return d
 }
 
-function findClosestPoint<T extends { x: number }>(points: T[], targetX: number): T {
+function findClosestPointByTime<T extends { x: number; t: { time: string } }>(points: T[], targetTime: string): T {
+  const targetMs = new Date(targetTime).getTime()
   let best = points[0]
-  let bestDist = Infinity
+  let bestDiff = Infinity
   for (const p of points) {
-    const dist = Math.abs(p.x - targetX)
-    if (dist < bestDist) { bestDist = dist; best = p }
+    const diff = Math.abs(new Date(p.t.time).getTime() - targetMs)
+    if (diff < bestDiff) { bestDiff = diff; best = p }
   }
   return best
 }

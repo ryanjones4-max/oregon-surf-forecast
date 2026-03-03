@@ -22,6 +22,7 @@ import { WeatherStrip } from '@/components/WeatherStrip'
 import { SpotGuide } from '@/components/SpotGuide'
 import { NearbySpots } from '@/components/NearbySpots'
 import { DaylightInfo } from '@/components/DaylightInfo'
+import { CrosshairProvider } from '@/components/ChartCrosshair'
 import Link from 'next/link'
 
 function findClosestHour(hours: ForecastDataPoint[]): ForecastDataPoint | null {
@@ -182,50 +183,52 @@ export default function SurfReportPage() {
             </div>
           )}
 
-          {/* Charts Section */}
-          <div className="space-y-0">
-            {/* Swell Chart */}
-            {allHours.length > 0 && (
-              <CollapsibleSection
-                title="Swell Height"
-                collapsed={chartsCollapsed['swell']}
-                onToggle={() => toggleChart('swell')}
-              >
-                <SwellChart hours={allHours} />
-              </CollapsibleSection>
-            )}
+          {/* Charts Section — shared crosshair syncs hover across all charts */}
+          <CrosshairProvider>
+            <div className="space-y-0">
+              {/* Swell Chart */}
+              {allHours.length > 0 && (
+                <CollapsibleSection
+                  title="Swell Height"
+                  collapsed={chartsCollapsed['swell']}
+                  onToggle={() => toggleChart('swell')}
+                >
+                  <SwellChart hours={allHours} />
+                </CollapsibleSection>
+              )}
 
-            {/* Wind Chart */}
-            {allHours.length > 0 && (
-              <CollapsibleSection
-                title="Wind"
-                collapsed={chartsCollapsed['wind']}
-                onToggle={() => toggleChart('wind')}
-              >
-                <WindGraph hours={allHours} />
-              </CollapsibleSection>
-            )}
+              {/* Wind Chart */}
+              {allHours.length > 0 && (
+                <CollapsibleSection
+                  title="Wind"
+                  collapsed={chartsCollapsed['wind']}
+                  onToggle={() => toggleChart('wind')}
+                >
+                  <WindGraph hours={allHours} />
+                </CollapsibleSection>
+              )}
 
-            {/* Tide Chart */}
-            <CollapsibleSection
-              title="Tides"
-              collapsed={chartsCollapsed['tide']}
-              onToggle={() => toggleChart('tide')}
-            >
-              <TideChart lat={spot.lat} lng={spot.lng} />
-            </CollapsibleSection>
-
-            {/* Weather Strip */}
-            {allHours.length > 0 && (
+              {/* Tide Chart */}
               <CollapsibleSection
-                title="Weather"
-                collapsed={chartsCollapsed['weather']}
-                onToggle={() => toggleChart('weather')}
+                title="Tides"
+                collapsed={chartsCollapsed['tide']}
+                onToggle={() => toggleChart('tide')}
               >
-                <WeatherStrip hours={allHours} />
+                <TideChart lat={spot.lat} lng={spot.lng} />
               </CollapsibleSection>
-            )}
-          </div>
+
+              {/* Weather Strip */}
+              {allHours.length > 0 && (
+                <CollapsibleSection
+                  title="Weather"
+                  collapsed={chartsCollapsed['weather']}
+                  onToggle={() => toggleChart('weather')}
+                >
+                  <WeatherStrip hours={allHours} />
+                </CollapsibleSection>
+              )}
+            </div>
+          </CrosshairProvider>
 
           {/* Bottom section: Daylight + Nearby */}
           <div className="grid gap-4 p-4 lg:grid-cols-2 lg:p-6">

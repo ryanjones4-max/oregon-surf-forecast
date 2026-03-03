@@ -1,6 +1,36 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { createContext, useContext, useState, useRef, useCallback, useMemo, type ReactNode } from 'react'
+
+// ---------------------------------------------------------------------------
+// Shared crosshair context — syncs hover across all charts by time
+// ---------------------------------------------------------------------------
+
+interface CrosshairCtx {
+  /** ISO time string the user is hovering over, or null when idle */
+  hoverTime: string | null
+  setHoverTime: (t: string | null) => void
+}
+
+const CrosshairContext = createContext<CrosshairCtx>({
+  hoverTime: null,
+  setHoverTime: () => {},
+})
+
+export function CrosshairProvider({ children }: { children: ReactNode }) {
+  const [hoverTime, setHoverTime] = useState<string | null>(null)
+  const value = useMemo(() => ({ hoverTime, setHoverTime }), [hoverTime])
+  return <CrosshairContext.Provider value={value}>{children}</CrosshairContext.Provider>
+}
+
+export function useSharedCrosshair() {
+  return useContext(CrosshairContext)
+}
+
+// ---------------------------------------------------------------------------
+// Per-chart hook — translates pointer position to a sampled-index and
+// publishes the corresponding time to the shared context
+// ---------------------------------------------------------------------------
 
 interface CrosshairState {
   x: number
@@ -35,10 +65,14 @@ export function useCrosshair(): UseCrosshairReturn {
   return { crosshair, containerRef, handlePointerMove, handlePointerLeave }
 }
 
+// ---------------------------------------------------------------------------
+// Chart tooltip (unchanged)
+// ---------------------------------------------------------------------------
+
 interface TooltipProps {
   x: number
   chartH: number
-  children: React.ReactNode
+  children: ReactNode
 }
 
 export function ChartTooltip({ x, chartH, children }: TooltipProps) {
