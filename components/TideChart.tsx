@@ -3,7 +3,7 @@
 import { useMemo, useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { calculateSunTimes } from '@/lib/sun'
-import { useSharedCrosshair, useSyncedScroll, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
 
 interface TidePoint {
   time: string
@@ -30,7 +30,7 @@ const TIME_AXIS_H = 18
 const SUN_ROW_H = 38
 
 export function TideChart({ lat, lng, hours }: Props) {
-  const { hoverTime, setHoverTime } = useSharedCrosshair()
+  const { hoverTime, inspecting } = useSharedCrosshair()
   const { containerRef, onScroll } = useSyncedScroll()
 
   const sampled = useMemo(() => {
@@ -54,20 +54,19 @@ export function TideChart({ lat, lng, hours }: Props) {
     return days
   }, [lat, lng])
 
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const container = containerRef.current
-    if (!container) return
-    const svg = container.querySelector('svg')
-    if (!svg) return
-    const svgRect = svg.getBoundingClientRect()
-    const x = e.clientX - svgRect.left + container.scrollLeft
-    if (sampled.length < 2) return
+  const resolveTime = useCallback((clientX: number, scrollLeft: number) => {
+    const el = containerRef.current
+    if (!el || sampled.length < 2) return null
+    const svg = el.querySelector('svg')
+    if (!svg) return null
+    const rect = svg.getBoundingClientRect()
+    const x = clientX - rect.left + scrollLeft
     const idx = Math.round(x / PX_PER_STEP)
     const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
-    setHoverTime(sampled[clamped].time)
-  }, [sampled, setHoverTime, containerRef])
+    return sampled[clamped]?.time ?? null
+  }, [sampled, containerRef])
 
-  const handlePointerLeave = useCallback(() => { setHoverTime(null) }, [setHoverTime])
+  const interaction = useChartInteraction(resolveTime, containerRef)
 
   if (sampled.length === 0) return null
 
@@ -129,9 +128,9 @@ export function TideChart({ lat, lng, hours }: Props) {
       </h3>
       <div
         ref={containerRef}
-        className="overflow-x-auto touch-pan-x"
-        onPointerMove={handlePointerMove}
-        onPointerLeave={handlePointerLeave}
+        className="overflow-x-auto"
+        style={{ touchAction: inspecting ? 'none' : 'pan-x' }}
+        {...interaction}
         onScroll={onScroll}
       >
         <svg width={chartW} height={totalH} className="select-none">

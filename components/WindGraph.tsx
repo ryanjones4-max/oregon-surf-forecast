@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { kmhToMph, degreesToCompass } from '@/lib/surfRating'
-import { useSharedCrosshair, useSyncedScroll, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -26,8 +26,23 @@ function windLabel(speed: number): string {
 }
 
 export function WindGraph({ hours }: Props) {
-  const { hoverTime, setHoverTime } = useSharedCrosshair()
+  const { hoverTime, inspecting } = useSharedCrosshair()
   const { containerRef, onScroll } = useSyncedScroll()
+
+  const resolveTime = useCallback((clientX: number, scrollLeft: number) => {
+    const el = containerRef.current
+    if (!el || hours.length === 0) return null
+    const svg = el.querySelector('svg')
+    if (!svg) return null
+    const rect = svg.getBoundingClientRect()
+    const x = clientX - rect.left + scrollLeft
+    const sampled = hours.filter((_, i) => i % 3 === 0)
+    const idx = Math.round(x / PX_PER_STEP)
+    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
+    return sampled[clamped]?.time ?? null
+  }, [hours, containerRef])
+
+  const interaction = useChartInteraction(resolveTime, containerRef)
 
   const sampled = hours.filter((_, i) => i % 3 === 0)
   const speeds = sampled.map((h) => kmhToMph(h.windSpeed ?? 0))
@@ -76,20 +91,6 @@ export function WindGraph({ hours }: Props) {
 
   const labelEvery = Math.max(1, Math.round(sampled.length / 16))
 
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const container = containerRef.current
-    if (!container) return
-    const svg = container.querySelector('svg')
-    if (!svg) return
-    const rect = svg.getBoundingClientRect()
-    const x = e.clientX - rect.left + container.scrollLeft
-    const idx = Math.round(x / step)
-    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
-    setHoverTime(sampled[clamped].time)
-  }, [step, sampled, setHoverTime, containerRef])
-
-  const handlePointerLeave = useCallback(() => { setHoverTime(null) }, [setHoverTime])
-
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">
       <div className="mb-3 flex items-start justify-between">
@@ -110,9 +111,9 @@ export function WindGraph({ hours }: Props) {
 
       <div
         ref={containerRef}
-        className="overflow-x-auto touch-pan-x"
-        onPointerMove={handlePointerMove}
-        onPointerLeave={handlePointerLeave}
+        className="overflow-x-auto"
+        style={{ touchAction: inspecting ? 'none' : 'pan-x' }}
+        {...interaction}
         onScroll={onScroll}
       >
         <svg width={chartW} height={totalH} className="select-none">

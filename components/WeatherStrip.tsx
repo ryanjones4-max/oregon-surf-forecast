@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { celsiusToFahrenheit } from '@/lib/surfRating'
 import { getWeatherEmoji } from '@/lib/weatherCodes'
-import { useSharedCrosshair, useSyncedScroll, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -12,22 +12,22 @@ interface Props {
 
 export function WeatherStrip({ hours }: Props) {
   const { containerRef, onScroll } = useSyncedScroll()
-  const { hoverTime, setHoverTime } = useSharedCrosshair()
+  const { hoverTime, inspecting } = useSharedCrosshair()
 
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const container = containerRef.current
-    if (!container || hours.length === 0) return
-    const inner = container.querySelector('[data-weather-cols]') as HTMLElement | null
-    const el = inner ?? container
-    const rect = el.getBoundingClientRect()
-    const x = e.clientX - rect.left + container.scrollLeft
+  const resolveTime = useCallback((clientX: number, scrollLeft: number) => {
+    const el = containerRef.current
+    if (!el || hours.length === 0) return null
+    const inner = el.querySelector('[data-weather-cols]') as HTMLElement | null
+    const target = inner ?? el
+    const rect = target.getBoundingClientRect()
+    const x = clientX - rect.left + scrollLeft
     const sampled = hours.filter((_, i) => i % 3 === 0)
     const idx = Math.floor(x / PX_PER_STEP)
     const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
-    setHoverTime(sampled[clamped].time)
-  }, [hours, setHoverTime, containerRef])
+    return sampled[clamped]?.time ?? null
+  }, [hours, containerRef])
 
-  const handlePointerLeave = useCallback(() => { setHoverTime(null) }, [setHoverTime])
+  const interaction = useChartInteraction(resolveTime, containerRef)
 
   if (hours.length === 0) return null
 
@@ -62,9 +62,9 @@ export function WeatherStrip({ hours }: Props) {
       </h3>
       <div
         ref={containerRef}
-        className="overflow-x-auto touch-pan-x"
-        onPointerMove={handlePointerMove}
-        onPointerLeave={handlePointerLeave}
+        className="overflow-x-auto"
+        style={{ touchAction: inspecting ? 'none' : 'pan-x' }}
+        {...interaction}
         onScroll={onScroll}
       >
         <div style={{ width: totalW }}>
