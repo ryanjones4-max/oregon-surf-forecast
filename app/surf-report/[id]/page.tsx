@@ -92,7 +92,7 @@ export default function SurfReportPage() {
           href="/"
           className="rounded-lg bg-sl-accent px-4 py-2 font-medium text-white hover:bg-sl-accent/80"
         >
-          Browse All Oregon Breaks
+          Browse All Breaks
         </Link>
       </div>
     )

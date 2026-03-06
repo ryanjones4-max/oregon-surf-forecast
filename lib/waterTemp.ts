@@ -6,14 +6,21 @@ import { CLUSTER_POINTS } from './breaks'
  * Data: https://www.ndbc.noaa.gov/data/realtime2/{station}.txt
  */
 const CLUSTER_BUOY_MAP: Record<string, string> = {
-  'north-coast': '46029',        // Columbia River Bar — 46.1°N
-  'short-sands': '46029',        // Columbia River Bar (closest to 45.7°N)
+  // Oregon
+  'north-coast': '46029',         // Columbia River Bar — 46.1°N
+  'short-sands': '46029',         // Columbia River Bar (closest to 45.7°N)
   'manzanita-oceanside': '46029', // Columbia River Bar
-  'pacific-city': '46050',       // Stonewall Bank/Newport — 44.6°N
-  'lincoln-city': '46050',       // Stonewall Bank/Newport
-  'newport-otter': '46050',      // Stonewall Bank/Newport
-  'central-south': '46229',      // Umpqua Offshore — 43.7°N
-  'south-coast': '46015',        // Port Orford — 42.7°N
+  'pacific-city': '46050',        // Stonewall Bank/Newport — 44.6°N
+  'lincoln-city': '46050',        // Stonewall Bank/Newport
+  'newport-otter': '46050',       // Stonewall Bank/Newport
+  'central-south': '46229',       // Umpqua Offshore — 43.7°N
+  'south-coast': '46015',         // Port Orford — 42.7°N
+  // North Carolina
+  'nc-crystal-coast': '41159',    // Cape Lookout Nearshore — 34.2°N
+  'nc-onslow-topsail': '41159',   // Cape Lookout Nearshore (closest)
+  'nc-wrightsville': '41110',     // Masonboro Inlet — 34.1°N
+  'nc-obx-south': '41025',        // Diamond Shoals — 35.0°N
+  'nc-obx-north': '41025',        // Diamond Shoals (closest to Rodanthe)
 }
 
 /** Monthly fallback if all buoys fail (°C) */

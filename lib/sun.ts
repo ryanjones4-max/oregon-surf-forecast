@@ -19,7 +19,14 @@ function toRad(deg: number): number {
   return deg * (Math.PI / 180)
 }
 
+function timezoneForLng(lng: number): string {
+  if (lng < -100) return 'America/Los_Angeles'
+  if (lng < -85) return 'America/Chicago'
+  return 'America/New_York'
+}
+
 export function calculateSunTimes(lat: number, lng: number, date: Date = new Date()): SunTimes {
+  const tz = timezoneForLng(lng)
   const jd = toJulianDate(date)
   const n = Math.floor(jd - 2451545.0 + 0.0008)
   const jStar = n - lng / 360
@@ -50,7 +57,7 @@ export function calculateSunTimes(lat: number, lng: number, date: Date = new Dat
   function jdToTime(julianDate: number): string {
     const ms = (julianDate - 2440587.5) * 86400000
     const d = new Date(ms)
-    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles' })
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: tz })
   }
 
   function msToDuration(ms: number): string {

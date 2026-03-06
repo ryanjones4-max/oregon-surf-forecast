@@ -1,8 +1,30 @@
 'use client'
 
+import { useState } from 'react'
 import type { SurfBreak } from '@/lib/breaks'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { computeSurfRating, getRatingDot, getRatingLabel, surfHeightRange } from '@/lib/surfRating'
+
+type StateKey = 'oregon' | 'nc'
+
+const stateRegions: Record<StateKey, { label: string; ids: string[] }[]> = {
+  oregon: [
+    { label: 'North Coast', ids: ['cannon-beach', 'indian-beach', 'rockaway-beach'] },
+    { label: 'North Central', ids: ['short-sands', 'manzanita', 'oceanside'] },
+    { label: 'Central Coast', ids: ['pacific-city', 'lincoln-city', 'nelscott-reef'] },
+    { label: 'Central South', ids: ['otter-rock', 'newport', 'florence'] },
+    { label: 'South Coast', ids: ['coos-bay', 'bandon', 'gold-beach', 'brookings'] },
+  ],
+  nc: [
+    { label: 'Crystal Coast', ids: ['atlantic-beach-nc', 'emerald-isle'] },
+    { label: 'Onslow / Topsail', ids: ['onslow-beach', 'seaview-pier', 'jolly-roger-pier', 'surf-city-pier', 'topsail-beach'] },
+    { label: 'Wrightsville Beach', ids: ['north-end-wrightsville', 'c-street', 'blockade-runner', 'south-end-wrightsville'] },
+    { label: 'Outer Banks South', ids: ['ocracoke', 'hatteras-ferry-docks', 'cape-hatteras-lighthouse', 'north-buxton', 'frisco', 'avon-pier'] },
+    { label: 'Outer Banks North', ids: ['rodanthe-pier', 's-turns'] },
+  ],
+}
+
+const ncBreakIds = new Set(stateRegions.nc.flatMap((r) => r.ids))
 
 interface Props {
   breaks: SurfBreak[]
@@ -12,22 +34,32 @@ interface Props {
 }
 
 export function SpotSidebar({ breaks, selectedId, onSelect, getForecast }: Props) {
-  const regions = [
-    { label: 'North Coast', ids: ['cannon-beach', 'indian-beach', 'rockaway-beach'] },
-    { label: 'North Central', ids: ['short-sands', 'manzanita', 'oceanside'] },
-    { label: 'Central Coast', ids: ['pacific-city', 'lincoln-city', 'nelscott-reef'] },
-    { label: 'Central South', ids: ['otter-rock', 'newport', 'florence'] },
-    { label: 'South Coast', ids: ['coos-bay', 'bandon', 'gold-beach', 'brookings'] },
-  ]
+  const defaultState: StateKey = selectedId && ncBreakIds.has(selectedId) ? 'nc' : 'oregon'
+  const [activeState, setActiveState] = useState<StateKey>(defaultState)
 
   const breakMap = new Map(breaks.map((b) => [b.id, b]))
 
   return (
     <nav className="flex h-full flex-col overflow-y-auto bg-sl-dark">
-      <div className="sticky top-0 z-10 border-b border-sl-border bg-sl-dark px-4 py-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-sl-muted">Oregon Breaks</h2>
+      <div className="sticky top-0 z-10 border-b border-sl-border bg-sl-dark">
+        <div className="flex">
+          {(['oregon', 'nc'] as const).map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveState(key)}
+              className={`flex-1 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition-colors border-b-2 ${
+                activeState === key
+                  ? 'border-sl-accent text-white'
+                  : 'border-transparent text-sl-muted hover:text-white'
+              }`}
+            >
+              {key === 'oregon' ? 'Oregon' : 'North Carolina'}
+            </button>
+          ))}
+        </div>
       </div>
-      {regions.map((region) => (
+      {stateRegions[activeState].map((region) => (
         <div key={region.label}>
           <div className="px-4 pt-3 pb-1">
             <span className="text-[10px] font-bold uppercase tracking-widest text-sl-muted/60">{region.label}</span>

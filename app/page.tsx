@@ -25,13 +25,29 @@ function findClosestHour(hours: ForecastDataPoint[]): ForecastDataPoint | null {
   return best
 }
 
-const regions = [
-  { label: 'North Coast', ids: ['cannon-beach', 'indian-beach', 'rockaway-beach'] },
-  { label: 'North Central', ids: ['short-sands', 'manzanita', 'oceanside'] },
-  { label: 'Central Coast', ids: ['pacific-city', 'lincoln-city', 'nelscott-reef'] },
-  { label: 'Central South', ids: ['otter-rock', 'newport', 'florence'] },
-  { label: 'South Coast', ids: ['coos-bay', 'bandon', 'gold-beach', 'brookings'] },
+type StateKey = 'oregon' | 'nc'
+
+const stateTabs: { key: StateKey; label: string }[] = [
+  { key: 'oregon', label: 'Oregon' },
+  { key: 'nc', label: 'North Carolina' },
 ]
+
+const stateRegions: Record<StateKey, { label: string; ids: string[] }[]> = {
+  oregon: [
+    { label: 'North Coast', ids: ['cannon-beach', 'indian-beach', 'rockaway-beach'] },
+    { label: 'North Central', ids: ['short-sands', 'manzanita', 'oceanside'] },
+    { label: 'Central Coast', ids: ['pacific-city', 'lincoln-city', 'nelscott-reef'] },
+    { label: 'Central South', ids: ['otter-rock', 'newport', 'florence'] },
+    { label: 'South Coast', ids: ['coos-bay', 'bandon', 'gold-beach', 'brookings'] },
+  ],
+  nc: [
+    { label: 'Crystal Coast', ids: ['atlantic-beach-nc', 'emerald-isle'] },
+    { label: 'Onslow / Topsail', ids: ['onslow-beach', 'seaview-pier', 'jolly-roger-pier', 'surf-city-pier', 'topsail-beach'] },
+    { label: 'Wrightsville Beach', ids: ['north-end-wrightsville', 'c-street', 'blockade-runner', 'south-end-wrightsville'] },
+    { label: 'Outer Banks South', ids: ['ocracoke', 'hatteras-ferry-docks', 'cape-hatteras-lighthouse', 'north-buxton', 'frisco', 'avon-pier'] },
+    { label: 'Outer Banks North', ids: ['rodanthe-pier', 's-turns'] },
+  ],
+}
 
 const breakMap = new Map(breaks.map((b) => [b.id, b]))
 
@@ -44,6 +60,7 @@ const levelColors: Record<string, string> = {
 }
 
 export default function Home() {
+  const [activeState, setActiveState] = useState<StateKey>('oregon')
   const [cache, setCache] = useState<CachedForecast | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -87,11 +104,10 @@ export default function Home() {
     <div className="min-h-screen bg-sl-bg">
       {/* Hero header */}
       <header className="border-b border-sl-border bg-sl-dark">
-        <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6 lg:py-12">
-          <h1 className="text-3xl font-bold text-white lg:text-4xl">Oregon Surf Forecast</h1>
+        <div className="mx-auto max-w-7xl px-4 pt-8 lg:px-6 lg:pt-12">
+          <h1 className="text-3xl font-bold text-white lg:text-4xl">Swellcast Surf Report</h1>
           <p className="mt-2 max-w-xl text-sm text-sl-muted">
-            Real-time surf reports for every break on the Oregon Coast — from Cannon Beach to Brookings.
-            Powered by Stormglass marine data and Open-Meteo weather.
+            Real-time surf reports for breaks on the Oregon and North Carolina coasts.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3 text-[10px] text-sl-muted">
             {cache?.fetchedAt && (
@@ -108,6 +124,24 @@ export default function Home() {
               {breaks.length} breaks
             </span>
           </div>
+
+          {/* State tabs */}
+          <nav className="mt-6 -mb-px flex gap-0">
+            {stateTabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveState(tab.key)}
+                className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 ${
+                  activeState === tab.key
+                    ? 'border-sl-accent text-white'
+                    : 'border-transparent text-sl-muted hover:text-white hover:border-sl-border'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
         </div>
       </header>
 
@@ -115,7 +149,7 @@ export default function Home() {
       {loading && !cache && (
         <div className="flex h-64 items-center justify-center gap-3">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-sl-accent border-t-transparent" />
-          <span className="text-sm text-sl-muted">Loading forecast data for all Oregon breaks...</span>
+          <span className="text-sm text-sl-muted">Loading forecast data for all breaks...</span>
         </div>
       )}
 
@@ -130,7 +164,7 @@ export default function Home() {
 
       {/* Regions */}
       <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6">
-        {regions.map((region) => (
+        {stateRegions[activeState].map((region) => (
           <div key={region.label} className="mb-8">
             <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-sl-muted/60">{region.label}</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -203,7 +237,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-sl-border py-6 text-center text-[10px] text-sl-muted/60">
-        Oregon Surf Forecast — Data from Stormglass.io + Open-Meteo
+        Swellcast Surf Report — Data from Stormglass.io + Open-Meteo
       </footer>
     </div>
   )

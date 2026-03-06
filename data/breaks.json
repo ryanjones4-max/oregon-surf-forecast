@@ -346,5 +346,389 @@
       "crowd": "Light",
       "description": "Rockaway Beach is a family-friendly seven-mile stretch of sand on Oregon's north coast. The gentle beach break is perfect for beginners and longboarders. Multiple access points along the town make it easy to find a peak to yourself. The Twin Rocks offshore provide a scenic backdrop."
     }
+  },
+  {
+    "id": "atlantic-beach-nc",
+    "name": "Atlantic Beach",
+    "clusterId": "nc-crystal-coast",
+    "lat": 34.6985,
+    "lng": -76.7405,
+    "level": "beginner",
+    "features": "The Circle, Oceanana Pier, closest break to Beaufort",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Aug-Dec (hurricane season + fall nor'easters)",
+      "bestSwell": "S-SE 3-6ft @ 8-12s",
+      "bestWind": "N/NW (offshore)",
+      "bestTide": "Mid to high incoming",
+      "bottom": "Sandy beach break",
+      "hazards": "Shallow sandbars, strong longshore currents, pier pilings (stay 50+ yards away)",
+      "crowd": "Heavy in summer, moderate otherwise",
+      "description": "Atlantic Beach is the Crystal Coast's most accessible surf spot, just across the bridge from Beaufort. The Circle area is the main hub with public parking and seasonal lifeguards. Oceanana Pier creates sandbars that focus the swell. South-facing exposure means it lights up on tropical swells and southwest wind events that miss the Outer Banks entirely."
+    }
+  },
+  {
+    "id": "emerald-isle",
+    "name": "Emerald Isle",
+    "clusterId": "nc-crystal-coast",
+    "lat": 34.6604,
+    "lng": -77.0209,
+    "level": "beginner",
+    "features": "Bogue Inlet Pier, long sandy beach, EILiveSurf cam",
+    "webcam": {
+      "url": "https://www.eilivesurf.com/",
+      "embedType": "link",
+      "fallbackUrl": "https://www.eilivesurf.com/"
+    },
+    "guide": {
+      "bestSeason": "Aug-Dec",
+      "bestSwell": "S-SE 3-6ft @ 8-12s",
+      "bestWind": "N/NW (offshore)",
+      "bestTide": "Mid incoming",
+      "bottom": "Sandy beach break with shifting sandbars",
+      "hazards": "Shallow sandbars at low tide, pier pilings at Bogue Inlet Pier, jellyfish in summer",
+      "crowd": "Moderate in summer, light off-season",
+      "description": "Emerald Isle is a laid-back beach town on the western end of Bogue Banks. The south-facing beach picks up tropical swells well. Bogue Inlet Pier creates larger waves near its pilings (maintain distance). Sandbars shift frequently with storms, so conditions change week to week. Hot Wax Surf Shop and Bert's are the local hubs."
+    }
+  },
+  {
+    "id": "onslow-beach",
+    "name": "Onslow Beach",
+    "clusterId": "nc-onslow-topsail",
+    "lat": 34.5528,
+    "lng": -77.3186,
+    "level": "beginner",
+    "features": "Camp Lejeune base beach, uncrowded",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Aug-Dec",
+      "bestSwell": "S-SE 3-5ft @ 8-12s",
+      "bestWind": "N/NW (offshore)",
+      "bestTide": "Mid",
+      "bottom": "Sandy beach break",
+      "hazards": "Military base access restrictions, strong currents",
+      "crowd": "Very light (base access required)",
+      "description": "Onslow Beach sits on Camp Lejeune Marine Corps Base. Access is restricted to military personnel and authorized visitors, which keeps it extremely uncrowded. The south-facing beach picks up tropical swells and can produce fun, punchy beach break waves when conditions align."
+    }
+  },
+  {
+    "id": "seaview-pier",
+    "name": "Seaview Pier",
+    "clusterId": "nc-onslow-topsail",
+    "lat": 34.4707,
+    "lng": -77.4381,
+    "level": "beginner",
+    "features": "North Topsail Beach, pier-adjacent peaks",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Aug-Dec",
+      "bestSwell": "S-SE 3-6ft @ 8-12s",
+      "bestWind": "N/NW (offshore)",
+      "bestTide": "Mid incoming",
+      "bottom": "Sandy beach break",
+      "hazards": "Pier pilings, rip currents near pier",
+      "crowd": "Light to moderate",
+      "description": "Seaview Pier on North Topsail Beach creates sandbars that concentrate swell energy. The peaks near the pier tend to be bigger and more defined than the open beach. Maintain safe distance from pilings. A good option when Topsail proper is too crowded."
+    }
+  },
+  {
+    "id": "jolly-roger-pier",
+    "name": "Jolly Roger Pier",
+    "clusterId": "nc-onslow-topsail",
+    "lat": 34.4365,
+    "lng": -77.5427,
+    "level": "intermediate",
+    "features": "Topsail Island, consistent pier break",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Aug-Dec",
+      "bestSwell": "SE-E 3-6ft @ 8-14s",
+      "bestWind": "NW/W (offshore)",
+      "bestTide": "Low to mid",
+      "bottom": "Sandy beach break near pier",
+      "hazards": "Pier pilings, strong currents on bigger days, shallow inside",
+      "crowd": "Moderate",
+      "description": "Jolly Roger Pier (formerly Topsail Fishing Pier) is one of Topsail Island's best-known breaks. The pier creates a defined sandbar that produces steeper, more powerful waves than the surrounding open beach. Works on both tropical swells from the south and nor'easter energy from the northeast."
+    }
+  },
+  {
+    "id": "surf-city-pier",
+    "name": "Surf City Pier",
+    "clusterId": "nc-onslow-topsail",
+    "lat": 34.4270,
+    "lng": -77.5560,
+    "level": "intermediate",
+    "features": "Heart of Topsail Island, active surf scene",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Aug-Dec",
+      "bestSwell": "SE-E 3-6ft @ 8-14s",
+      "bestWind": "NW/W (offshore)",
+      "bestTide": "Low to mid incoming",
+      "bottom": "Sandy beach break",
+      "hazards": "Pier pilings, crowds on good days, rip currents",
+      "crowd": "Moderate to heavy",
+      "description": "Surf City Pier sits at the heart of Topsail Island's surf scene. The pier focuses swell into defined peaks. This is where the local surf community congregates — expect company on good days. The town has a fun, low-key vibe with local shops and restaurants within walking distance."
+    }
+  },
+  {
+    "id": "topsail-beach",
+    "name": "Topsail Beach",
+    "clusterId": "nc-onslow-topsail",
+    "lat": 34.3569,
+    "lng": -77.6251,
+    "level": "beginner",
+    "features": "Southern tip of Topsail Island, mellow beach break",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Aug-Dec",
+      "bestSwell": "S-SE 3-5ft @ 8-12s",
+      "bestWind": "N/NW (offshore)",
+      "bestTide": "Mid",
+      "bottom": "Sandy beach break",
+      "hazards": "Inlet currents near south end, shallow sandbars",
+      "crowd": "Light",
+      "description": "Topsail Beach is the quieter southern end of Topsail Island. The mellow beach break is forgiving for beginners and longboarders. The inlet at the south end creates shifting sandbars that can produce fun wedges. Less crowded than the Surf City area."
+    }
+  },
+  {
+    "id": "north-end-wrightsville",
+    "name": "North End Wrightsville",
+    "clusterId": "nc-wrightsville",
+    "lat": 34.2270,
+    "lng": -77.7866,
+    "level": "intermediate",
+    "features": "Shell Island area, less crowded than C Street",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Aug-Mar",
+      "bestSwell": "SE-E 3-6ft @ 8-14s",
+      "bestWind": "W/NW (offshore)",
+      "bestTide": "Low to mid",
+      "bottom": "Sandy beach break",
+      "hazards": "Strong currents near inlet, shifting sandbars",
+      "crowd": "Moderate",
+      "description": "The north end of Wrightsville Beach near the Mason Inlet offers more room to spread out than the packed lineups further south. Shifting sandbars near the inlet can create quality peaks. Access via Shell Island Resort area."
+    }
+  },
+  {
+    "id": "c-street",
+    "name": "C Street",
+    "clusterId": "nc-wrightsville",
+    "lat": 34.2108,
+    "lng": -77.7948,
+    "level": "intermediate",
+    "features": "Wrightsville Beach's most popular break, hollow barrels on bigger swells",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Aug-Mar",
+      "bestSwell": "E-SE 3-8ft @ 8-14s",
+      "bestWind": "W/NW (offshore)",
+      "bestTide": "Low to mid",
+      "bottom": "Sandy beach break",
+      "hazards": "Crowds, shallow inside, strong rip currents on bigger days",
+      "crowd": "Heavy — Wrightsville's main break",
+      "description": "C Street is Wrightsville Beach's premier surf spot and the epicenter of the local surf scene. On larger swells it can produce hollow, barreling waves that rival anything on the southeast coast. The lineup is competitive — this is where NC's best surfers congregate. Multiple surf shops, restaurants, and the iconic Wrightsville bar scene are steps away."
+    }
+  },
+  {
+    "id": "blockade-runner",
+    "name": "Blockade Runner",
+    "clusterId": "nc-wrightsville",
+    "lat": 34.2050,
+    "lng": -77.7980,
+    "level": "beginner",
+    "features": "Near Blockade Runner hotel, mellow peaks",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Aug-Mar",
+      "bestSwell": "SE-E 3-5ft @ 8-12s",
+      "bestWind": "W/NW (offshore)",
+      "bestTide": "Mid",
+      "bottom": "Sandy beach break",
+      "hazards": "Swimmers in summer, rip currents",
+      "crowd": "Moderate",
+      "description": "The stretch near the Blockade Runner hotel offers mellower peaks than C Street, making it a good option for intermediate surfers or when the main breaks are too crowded. The wider beach and gentler slope produce softer waves that are forgiving on smaller days."
+    }
+  },
+  {
+    "id": "south-end-wrightsville",
+    "name": "South End Wrightsville",
+    "clusterId": "nc-wrightsville",
+    "lat": 34.1950,
+    "lng": -77.8070,
+    "level": "intermediate",
+    "features": "Masonboro Inlet adjacent, powerful on bigger swells",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Aug-Mar",
+      "bestSwell": "E-SE 4-8ft @ 10-14s",
+      "bestWind": "W/NW (offshore)",
+      "bestTide": "Mid incoming",
+      "bottom": "Sandy beach break near inlet",
+      "hazards": "Strong inlet currents, shifting sandbars, sharks near inlet",
+      "crowd": "Moderate",
+      "description": "South End Wrightsville near Masonboro Inlet can produce the most powerful waves on the island when conditions align. The inlet bathymetry focuses swell energy and creates steeper, faster waves. Respect the inlet currents — they are strong and can sweep you out quickly."
+    }
+  },
+  {
+    "id": "ocracoke",
+    "name": "Ocracoke",
+    "clusterId": "nc-obx-south",
+    "lat": 35.1046,
+    "lng": -75.9843,
+    "level": "intermediate",
+    "features": "Remote barrier island, accessible via ferry from Beaufort/Cedar Island",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Sep-Mar",
+      "bestSwell": "NE-E 4-8ft @ 8-14s",
+      "bestWind": "W/SW (offshore)",
+      "bestTide": "All tides",
+      "bottom": "Sandy beach break",
+      "hazards": "Isolation (limited services), strong currents, no lifeguards",
+      "crowd": "Very light",
+      "description": "Ocracoke Island is accessible from Beaufort via the 2.25-hour Cedar Island ferry. The uncrowded beach breaks stretch for miles with nobody around. Waves are less consistent than Hatteras to the north but when a swell hits, the empty peaks make it worthwhile. Reservations for the ferry are strongly recommended."
+    }
+  },
+  {
+    "id": "hatteras-ferry-docks",
+    "name": "Hatteras Ferry Docks",
+    "clusterId": "nc-obx-south",
+    "lat": 35.2119,
+    "lng": -75.6905,
+    "level": "intermediate",
+    "features": "Southern tip of Hatteras Island, near Ocracoke ferry",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Sep-Mar",
+      "bestSwell": "NE-E 4-8ft @ 10-14s",
+      "bestWind": "W/NW (offshore)",
+      "bestTide": "Mid",
+      "bottom": "Sandy beach break",
+      "hazards": "Strong inlet currents, boat traffic near ferry channel",
+      "crowd": "Light",
+      "description": "The beach near the Hatteras-Ocracoke ferry docks can produce quality waves when northeast swells wrap into the area. The inlet bathymetry creates interesting sandbars. Less crowded than the more famous breaks to the north."
+    }
+  },
+  {
+    "id": "cape-hatteras-lighthouse",
+    "name": "Cape Hatteras Lighthouse",
+    "clusterId": "nc-obx-south",
+    "lat": 35.2505,
+    "lng": -75.5288,
+    "level": "advanced",
+    "features": "East Coast's most iconic break, barreling lefts, First Jetty",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Sep-Mar (peak: fall hurricanes and winter nor'easters)",
+      "bestSwell": "N-NE 4-10ft @ 10-16s",
+      "bestWind": "W/SW (offshore)",
+      "bestTide": "Low to mid",
+      "bottom": "Sandy beach with jetty structure",
+      "hazards": "Powerful hollow waves, strong currents, shallow sandbars, localism",
+      "crowd": "Heavy on good days — this is the East Coast's premier break",
+      "description": "Cape Hatteras Lighthouse (First Jetty/The Point) is where East Coast professional surfing was born. The narrow continental shelf allows swells to hit relatively unfiltered, producing hollow, powerful barrels that rival anything on the Atlantic seaboard. Fall hurricanes and winter nor'easters deliver the goods. Expect crowds and respect the locals."
+    }
+  },
+  {
+    "id": "north-buxton",
+    "name": "North Buxton",
+    "clusterId": "nc-obx-south",
+    "lat": 35.2710,
+    "lng": -75.5340,
+    "level": "intermediate",
+    "features": "Stone jetties, quality sandbars north of Cape Point",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Sep-Mar",
+      "bestSwell": "NE-E 4-8ft @ 10-14s",
+      "bestWind": "W/SW (offshore)",
+      "bestTide": "Mid",
+      "bottom": "Sandy beach break near jetties",
+      "hazards": "Jetty rocks, strong currents, powerful shore break",
+      "crowd": "Moderate",
+      "description": "North Buxton features stone jetties that create quality sandbars, producing consistent and well-shaped waves. Less intense than the Lighthouse but still delivers solid surf on northeast and east swells. The jetties provide a useful reference point for positioning in the lineup."
+    }
+  },
+  {
+    "id": "frisco",
+    "name": "Frisco",
+    "clusterId": "nc-obx-south",
+    "lat": 35.2339,
+    "lng": -75.6198,
+    "level": "intermediate",
+    "features": "South-facing beach, lights up on summer south swells",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Jun-Nov (south-facing exposure catches summer swells)",
+      "bestSwell": "S-SE 4-8ft @ 8-14s",
+      "bestWind": "N/NW (offshore)",
+      "bestTide": "Mid",
+      "bottom": "Sandy beach break",
+      "hazards": "Strong currents, remote location",
+      "crowd": "Light to moderate",
+      "description": "Frisco's south-facing beach angle gives it an advantage over other OBX spots during summer. When southwest winds push and south swells arrive from tropical systems, Frisco can be pumping while the rest of Hatteras is flat. Also works well on east and northeast swells in fall and winter."
+    }
+  },
+  {
+    "id": "avon-pier",
+    "name": "Avon Pier",
+    "clusterId": "nc-obx-south",
+    "lat": 35.3475,
+    "lng": -75.5050,
+    "level": "intermediate",
+    "features": "Classic OBX pier break, consistent sandbars",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Sep-Mar",
+      "bestSwell": "NE-E 4-8ft @ 10-14s",
+      "bestWind": "W/SW (offshore)",
+      "bestTide": "Low to mid",
+      "bottom": "Sandy beach break near pier",
+      "hazards": "Pier pilings, strong rip currents, hollow shore break",
+      "crowd": "Moderate to heavy",
+      "description": "Avon Pier is one of the more consistent breaks on Hatteras Island. The pier creates defined sandbars that focus swell energy into quality peaks. The east-facing beach catches both north and south swells. Avon village has a small but dedicated surf community."
+    }
+  },
+  {
+    "id": "rodanthe-pier",
+    "name": "Rodanthe Pier",
+    "clusterId": "nc-obx-north",
+    "lat": 35.5857,
+    "lng": -75.4628,
+    "level": "intermediate",
+    "features": "Powerful beach break, long rides, fewer crowds than S-Turns",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Sep-Mar",
+      "bestSwell": "NE-E 4-8ft @ 10-14s",
+      "bestWind": "W/SW (offshore)",
+      "bestTide": "Low to mid",
+      "bottom": "Sandy beach break",
+      "hazards": "Powerful shore break, pier pilings, strong currents",
+      "crowd": "Moderate",
+      "description": "Rodanthe Pier sits between the lighthouse to the south and Oregon Inlet to the north. The powerful beach break produces long, fast rides. Less crowded than nearby S-Turns, making it a good option when the more popular spots are packed. The narrow island width means waves can break close to shore."
+    }
+  },
+  {
+    "id": "s-turns",
+    "name": "S-Turns",
+    "clusterId": "nc-obx-north",
+    "lat": 35.6754,
+    "lng": -75.4867,
+    "level": "advanced",
+    "features": "End of Pea Island, Hatteras Island's most popular break",
+    "webcam": null,
+    "guide": {
+      "bestSeason": "Sep-Mar",
+      "bestSwell": "NE-E 5-10ft @ 10-16s",
+      "bestWind": "W/SW (offshore)",
+      "bestTide": "Low to mid",
+      "bottom": "Sandy beach break with shifting sandbars",
+      "hazards": "Powerful hollow waves, strong rip currents, crowds, shifting sandbars",
+      "crowd": "Heavy — the most popular break on Hatteras Island",
+      "description": "S-Turns at the end of Pea Island is currently the most popular break on Hatteras Island. Large swells from nor'easters and hurricanes produce powerful, hollow waves that attract surfers from across the East Coast. Named for the S-shaped curves in the road. Expect crowds and a competitive lineup on good days."
+    }
   }
 ]

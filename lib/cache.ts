@@ -1,5 +1,6 @@
-const CACHE_KEY = 'oregon-surf-forecast'
-const CACHE_DATE_KEY = 'oregon-surf-forecast-date'
+const CACHE_VERSION = 2
+const CACHE_KEY = `swellcast-surf-report-v${CACHE_VERSION}`
+const CACHE_DATE_KEY = `swellcast-surf-report-date-v${CACHE_VERSION}`
 
 import type { ForecastDataPoint } from '@/lib/forecast'
 

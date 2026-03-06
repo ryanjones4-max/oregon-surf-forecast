@@ -31,7 +31,7 @@ export function SpotHeader({ spot, forecast, activeTab, onTabChange }: Props) {
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
         {/* Top row */}
         <div className="flex items-center gap-2 py-2 text-xs text-sl-muted">
-          <Link href="/" className="hover:text-white transition-colors">Oregon Coast</Link>
+          <Link href="/" className="hover:text-white transition-colors">All Breaks</Link>
           <span>/</span>
           <span className="text-sl-text">{spot.name}</span>
         </div>

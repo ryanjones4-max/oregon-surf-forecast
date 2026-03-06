@@ -3,10 +3,10 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Oregon Surf Forecast',
-    template: '%s — Oregon Surf Forecast',
+    default: 'Swellcast Surf Report',
+    template: '%s — Swellcast Surf Report',
   },
-  description: 'Real-time surf reports for every break on the Oregon Coast — Cannon Beach to Brookings. Wave height, swell, wind, tides, and webcams.',
+  description: 'Real-time surf reports for breaks on the Oregon and North Carolina coasts. Wave height, swell, wind, tides, and webcams.',
 }
 
 export const viewport = {
