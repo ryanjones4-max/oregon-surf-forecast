@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { celsiusToFahrenheit } from '@/lib/surfRating'
 import { getWeatherEmoji } from '@/lib/weatherCodes'
-import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -33,13 +33,14 @@ export function WeatherStrip({ hours }: Props) {
 
   const sampled = hours.filter((_, i) => i % 3 === 0)
   const hoverIdx = resolveHoverIdx(sampled, hoverTime)
+  const hoveredSample = hoverIdx != null ? sampled[hoverIdx] : null
 
   const colW = PX_PER_STEP
   const totalW = sampled.length * colW
 
   let lastDay = ''
   const dayBoundaries: number[] = []
-  const daySpans: Array<{ startIdx: number; endIdx: number; label: string }> = []
+  const daySpans: Array<{ startIdx: number; endIdx: number; label: string; dayIdx: number }> = []
   sampled.forEach((h, i) => {
     const d = h.time.slice(0, 10)
     if (d !== lastDay) {
@@ -50,16 +51,29 @@ export function WeatherStrip({ hours }: Props) {
       daySpans.push({
         startIdx: i,
         endIdx: sampled.length,
-        label: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+        label: date.toLocaleDateString('en-US', DAY_LABEL_FORMAT),
+        dayIdx: daySpans.length,
       })
     }
   })
 
   return (
     <div className="rounded-lg border border-sl-border bg-sl-card p-4">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-sl-muted">
-        Weather <span className="font-normal text-sl-muted/50">(°f)</span>
-      </h3>
+      <div className="mb-3 flex items-start justify-between">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-sl-muted">
+          Weather <span className="font-normal text-sl-muted/50">(°f)</span>
+        </h3>
+        {hoveredSample && (
+          <div className="text-right">
+            <div className="text-xs font-medium text-white/70">
+              {formatCrosshairTime(hoveredSample.time)}
+            </div>
+            <div className="mt-0.5 text-base font-bold text-white tabular-nums">
+              {hoveredSample.airTemperature != null ? `${Math.round(celsiusToFahrenheit(hoveredSample.airTemperature))}°F` : '—'}
+            </div>
+          </div>
+        )}
+      </div>
       <div
         ref={containerRef}
         className="overflow-x-auto"
@@ -79,10 +93,11 @@ export function WeatherStrip({ hours }: Props) {
                   style={{
                     width: spanCols * colW,
                     flexShrink: 0,
-                    borderLeft: i > 0 ? '1px solid #333333' : 'none',
+                    borderLeft: i > 0 ? '1px solid #555' : 'none',
+                    backgroundColor: span.dayIdx % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent',
                   }}
                 >
-                  <span className="text-[10px] font-semibold text-sl-muted/80">{span.label}</span>
+                  <span className="text-[11px] font-semibold text-sl-muted">{span.label}</span>
                 </div>
               )
             })}
@@ -99,6 +114,9 @@ export function WeatherStrip({ hours }: Props) {
               const tempF = h.airTemperature != null ? Math.round(celsiusToFahrenheit(h.airTemperature)) : null
               const emoji = h.weatherCode != null ? getWeatherEmoji(h.weatherCode) : null
 
+              const spanInfo = daySpans.find(s => i >= s.startIdx && i < s.endIdx)
+              const isOddDay = spanInfo ? spanInfo.dayIdx % 2 === 1 : false
+
               return (
                 <div
                   key={i}
@@ -106,8 +124,8 @@ export function WeatherStrip({ hours }: Props) {
                   style={{
                     width: colW,
                     flexShrink: 0,
-                    borderLeft: isDayBoundary ? '1px solid #333333' : 'none',
-                    backgroundColor: isHov ? 'rgba(212,212,212,0.08)' : 'transparent',
+                    borderLeft: isDayBoundary ? '1px solid #555' : 'none',
+                    backgroundColor: isHov ? 'rgba(212,212,212,0.12)' : isOddDay ? 'rgba(255,255,255,0.02)' : 'transparent',
                     borderRadius: isHov ? '4px' : '0',
                   }}
                 >

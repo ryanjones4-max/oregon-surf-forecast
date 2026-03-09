@@ -2,8 +2,8 @@
 
 import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
-import { metersToFeet, degreesToCompass, computeSurfRating, getRatingDot, getRatingLabel, estimateBreakingHeight, surfHeightRange } from '@/lib/surfRating'
-import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP } from './ChartCrosshair'
+import { metersToFeet, degreesToCompass, computeSurfRating, getRatingDot, estimateBreakingHeight, surfHeightRange } from '@/lib/surfRating'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -38,14 +38,12 @@ export function SwellChart({ hours }: Props) {
   const chartW = sampled.length * step
   const barW = Math.max(2, step * 0.7)
 
+  const pillH = 20
   const ratingBarH = 6
   const chartH = 110
   const labelH = 24
-  const totalH = ratingBarH + chartH + labelH
-
-  const now = Date.now()
-  let nowX = -1
-  let nowTime = ''
+  const totalH = pillH + ratingBarH + chartH + labelH
+  const topOffset = pillH
 
   const bars = sampled.map((h, i) => {
     const ft = metersToFeet(estimateBreakingHeight(h.waveHeight, h.swellPeriod))
@@ -53,23 +51,17 @@ export function SwellChart({ hours }: Props) {
     const rating = computeSurfRating(h)
     const barH = Math.max(2, (ft / maxH) * (chartH - 16))
     const x = i * step
-    const hMs = new Date(h.time).getTime()
-    const nextMs = sampled[i + 1] ? new Date(sampled[i + 1].time).getTime() : Infinity
-    if (nowX < 0 && hMs <= now && now < nextMs) {
-      nowX = x + barW / 2
-      nowTime = new Date(now).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-    }
     return { x, ft, lo, hi, barH, rating, h, i }
   })
 
-  const dayLabels: Array<{ x: number; label: string }> = []
+  const dayLabels: Array<{ x: number; label: string; dayIdx: number }> = []
   let lastDay = ''
   bars.forEach((b) => {
     const d = b.h.time.slice(0, 10)
     if (d !== lastDay) {
       lastDay = d
       const date = new Date(b.h.time)
-      dayLabels.push({ x: b.x, label: date.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' }) })
+      dayLabels.push({ x: b.x, label: date.toLocaleDateString('en-US', DAY_LABEL_FORMAT), dayIdx: dayLabels.length })
     }
   })
 
@@ -85,8 +77,8 @@ export function SwellChart({ hours }: Props) {
         {hov && (
           <div className="flex items-center gap-4 text-right">
             <div>
-              <div className="text-xs text-sl-muted">
-                {new Date(hov.h.time).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}
+              <div className="text-xs font-medium text-white/70">
+                {formatCrosshairTime(hov.h.time)}
               </div>
               <div className="mt-0.5 text-base font-bold text-white tabular-nums">
                 {hov.lo}-{hov.hi} ft
@@ -114,23 +106,33 @@ export function SwellChart({ hours }: Props) {
         onScroll={onScroll}
       >
         <svg width={chartW} height={totalH} className="select-none">
+          {/* Alternating day backgrounds */}
+          {dayLabels.map((d, i) => {
+            const nextX = dayLabels[i + 1]?.x ?? chartW
+            return d.dayIdx % 2 === 1 ? (
+              <rect key={`bg-${i}`} x={d.x} y={topOffset} width={nextX - d.x} height={ratingBarH + chartH} fill="rgba(255,255,255,0.02)" />
+            ) : null
+          })}
+
           {/* Rating color strip */}
           {bars.map((b) => (
-            <rect key={`r${b.i}`} x={b.x} y={0} width={barW} height={ratingBarH} rx={1}
+            <rect key={`r${b.i}`} x={b.x} y={topOffset} width={barW} height={ratingBarH} rx={1}
               fill={getRatingDot(b.rating)} opacity={hoverIdx === b.i ? 1 : 0.8} />
           ))}
 
           {/* Day dividers */}
           {dayLabels.map((d, i) => (
             <g key={i}>
-              <line x1={d.x} y1={ratingBarH} x2={d.x} y2={ratingBarH + chartH} stroke="#333333" strokeWidth="1" />
-              <text x={d.x + 4} y={ratingBarH + chartH + 14} fill="#858585" fontSize="9">{d.label}</text>
+              {i > 0 && (
+                <line x1={d.x} y1={topOffset + ratingBarH} x2={d.x} y2={topOffset + ratingBarH + chartH} stroke="#555" strokeWidth="1" />
+              )}
+              <text x={d.x + 4} y={topOffset + ratingBarH + chartH + 14} fill="#aaa" fontSize="10" fontWeight="600">{d.label}</text>
             </g>
           ))}
 
           {/* Y-axis grid */}
           {[0, maxH / 2, maxH].map((v, i) => {
-            const y = ratingBarH + chartH - (v / maxH) * (chartH - 16)
+            const y = topOffset + ratingBarH + chartH - (v / maxH) * (chartH - 16)
             return (
               <g key={i}>
                 <line x1={0} y1={y} x2={chartW} y2={y} stroke="#333333" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.4" />
@@ -141,7 +143,7 @@ export function SwellChart({ hours }: Props) {
 
           {/* Bars */}
           {bars.map((b) => (
-            <rect key={`b${b.i}`} x={b.x} y={ratingBarH + chartH - b.barH} width={barW} height={b.barH} rx={1.5}
+            <rect key={`b${b.i}`} x={b.x} y={topOffset + ratingBarH + chartH - b.barH} width={barW} height={b.barH} rx={1.5}
               fill={getRatingDot(b.rating)} opacity={hoverIdx === b.i ? 1 : 0.45} />
           ))}
 
@@ -149,7 +151,7 @@ export function SwellChart({ hours }: Props) {
           {bars.map((b) => {
             if (b.i % labelEvery !== 0 && hoverIdx !== b.i) return null
             return (
-              <text key={`l${b.i}`} x={b.x + barW / 2} y={ratingBarH + chartH - b.barH - 4}
+              <text key={`l${b.i}`} x={b.x + barW / 2} y={topOffset + ratingBarH + chartH - b.barH - 4}
                 fill="#d4d4d4" fontSize="8" fontWeight={hoverIdx === b.i ? '700' : '500'} textAnchor="middle">
                 {b.ft.toFixed(0)}
               </text>
@@ -161,26 +163,22 @@ export function SwellChart({ hours }: Props) {
             if (b.i % labelEvery !== 0) return null
             const hour = new Date(b.h.time).getHours()
             return (
-              <text key={`h${b.i}`} x={b.x + barW / 2} y={ratingBarH + chartH + 14} fill="#6e6e6e" fontSize="7" textAnchor="middle">
+              <text key={`h${b.i}`} x={b.x + barW / 2} y={topOffset + ratingBarH + chartH + 14} fill="#6e6e6e" fontSize="7" textAnchor="middle">
                 {hour === 0 ? '12a' : hour < 12 ? `${hour}` : hour === 12 ? '12p' : `${hour - 12}`}
               </text>
             )
           })}
 
-          {/* Now indicator */}
-          {nowX > 0 && (
-            <g>
-              <line x1={nowX} y1={ratingBarH} x2={nowX} y2={ratingBarH + chartH} stroke="#d4d4d4" strokeWidth="1.5" />
-              <rect x={nowX - 22} y={ratingBarH + 2} width={44} height={14} rx={3} fill="#121212" stroke="#d4d4d4" strokeWidth="0.5" />
-              <text x={nowX} y={ratingBarH + 12} fill="#d4d4d4" fontSize="8" fontWeight="600" textAnchor="middle">{nowTime}</text>
-            </g>
-          )}
-
-          {/* Hover crosshair */}
+          {/* Hover crosshair + day/time pill */}
           {hov && (
             <g>
-              <line x1={hov.x + barW / 2} y1={ratingBarH} x2={hov.x + barW / 2} y2={ratingBarH + chartH} stroke="#d4d4d4" strokeWidth="1" opacity="0.3" />
-              <circle cx={hov.x + barW / 2} cy={ratingBarH + chartH - hov.barH} r="4" fill={getRatingDot(hov.rating)} stroke="#121212" strokeWidth="2" />
+              <line x1={hov.x + barW / 2} y1={topOffset + ratingBarH} x2={hov.x + barW / 2} y2={topOffset + ratingBarH + chartH} stroke="#d4d4d4" strokeWidth="1" opacity="0.4" />
+              <circle cx={hov.x + barW / 2} cy={topOffset + ratingBarH + chartH - hov.barH} r="5" fill={getRatingDot(hov.rating)} stroke="#121212" strokeWidth="2" />
+              {/* Floating pill */}
+              <rect x={hov.x + barW / 2 - 52} y={0} width={104} height={18} rx={9} fill="rgba(18,18,18,0.92)" stroke="#555" strokeWidth="0.5" />
+              <text x={hov.x + barW / 2} y={13} fill="#d4d4d4" fontSize="9" fontWeight="600" textAnchor="middle">
+                {formatCrosshairTime(hov.h.time)}
+              </text>
             </g>
           )}
         </svg>

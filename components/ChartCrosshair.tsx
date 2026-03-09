@@ -17,6 +17,9 @@ import {
  */
 export const PX_PER_STEP = 24
 
+const EDGE_ZONE = 40
+const EDGE_SCROLL_SPEED = 6
+
 // ---------------------------------------------------------------------------
 // Shared crosshair + scroll-sync context
 // ---------------------------------------------------------------------------
@@ -29,6 +32,7 @@ interface CrosshairCtx {
   registerScroller: (ref: RefObject<HTMLDivElement | null>) => void
   unregisterScroller: (ref: RefObject<HTMLDivElement | null>) => void
   syncScroll: (source: RefObject<HTMLDivElement | null>) => void
+  scrollAllBy: (delta: number) => void
 }
 
 const CrosshairContext = createContext<CrosshairCtx>({
@@ -39,6 +43,7 @@ const CrosshairContext = createContext<CrosshairCtx>({
   registerScroller: () => {},
   unregisterScroller: () => {},
   syncScroll: () => {},
+  scrollAllBy: () => {},
 })
 
 export function CrosshairProvider({ children }: { children: ReactNode }) {
@@ -67,9 +72,17 @@ export function CrosshairProvider({ children }: { children: ReactNode }) {
     isSyncing.current = false
   }, [])
 
+  const scrollAllBy = useCallback((delta: number) => {
+    scrollersRef.current.forEach((ref) => {
+      if (ref.current) {
+        ref.current.scrollLeft += delta
+      }
+    })
+  }, [])
+
   const value = useMemo(
-    () => ({ hoverTime, setHoverTime, inspecting, setInspecting, registerScroller, unregisterScroller, syncScroll }),
-    [hoverTime, inspecting, registerScroller, unregisterScroller, syncScroll],
+    () => ({ hoverTime, setHoverTime, inspecting, setInspecting, registerScroller, unregisterScroller, syncScroll, scrollAllBy }),
+    [hoverTime, inspecting, registerScroller, unregisterScroller, syncScroll, scrollAllBy],
   )
 
   return <CrosshairContext.Provider value={value}>{children}</CrosshairContext.Provider>
@@ -103,28 +116,20 @@ export function useSyncedScroll() {
 // useChartInteraction – unified mouse + touch crosshair handling
 // ---------------------------------------------------------------------------
 
-const HOLD_DELAY = 150
-const MOVE_THRESHOLD = 8
-
 type TimeResolver = (clientX: number, scrollLeft: number) => string | null
 
 /**
- * Returns event handler props to spread onto the chart scroll container.
- *
  * Desktop: pointerMove drives crosshair, pointerLeave clears it.
- * Mobile:  short press-and-hold activates inspect mode (blocks scroll,
- *          touchMove drives crosshair). Lift or quick swipe = normal scroll.
+ * Mobile:  any touch instantly drives the crosshair (always-draggable).
+ *          Crosshair persists on lift. Edge auto-scroll when finger is
+ *          near viewport edges.
  */
 export function useChartInteraction(resolveTime: TimeResolver, containerRef: RefObject<HTMLDivElement | null>) {
-  const { setHoverTime, setInspecting } = useSharedCrosshair()
+  const { setHoverTime, setInspecting, scrollAllBy } = useSharedCrosshair()
 
-  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const touchStartPos = useRef<{ x: number; y: number } | null>(null)
-  const isInspecting = useRef(false)
-
-  const clearHold = useCallback(() => {
-    if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null }
-  }, [])
+  const edgeRaf = useRef<number | null>(null)
+  const edgeDir = useRef<number>(0)
+  const lastClientX = useRef<number>(0)
 
   const resolveFromEvent = useCallback((clientX: number) => {
     const el = containerRef.current
@@ -132,6 +137,38 @@ export function useChartInteraction(resolveTime: TimeResolver, containerRef: Ref
     return resolveTime(clientX, el.scrollLeft)
   }, [containerRef, resolveTime])
 
+  const stopEdgeScroll = useCallback(() => {
+    edgeDir.current = 0
+    if (edgeRaf.current != null) {
+      cancelAnimationFrame(edgeRaf.current)
+      edgeRaf.current = null
+    }
+  }, [])
+
+  const tickEdgeScroll = useCallback(() => {
+    if (edgeDir.current === 0) return
+    scrollAllBy(edgeDir.current * EDGE_SCROLL_SPEED)
+    const time = resolveFromEvent(lastClientX.current)
+    if (time) setHoverTime(time)
+    edgeRaf.current = requestAnimationFrame(tickEdgeScroll)
+  }, [scrollAllBy, resolveFromEvent, setHoverTime])
+
+  const startEdgeScroll = useCallback((clientX: number) => {
+    const vw = window.innerWidth
+    let dir = 0
+    if (clientX < EDGE_ZONE) dir = -1
+    else if (clientX > vw - EDGE_ZONE) dir = 1
+
+    if (dir !== edgeDir.current) {
+      stopEdgeScroll()
+      edgeDir.current = dir
+      if (dir !== 0) {
+        edgeRaf.current = requestAnimationFrame(tickEdgeScroll)
+      }
+    }
+  }, [stopEdgeScroll, tickEdgeScroll])
+
+  // --- Desktop ---
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'touch') return
     const time = resolveFromEvent(e.clientX)
@@ -143,53 +180,31 @@ export function useChartInteraction(resolveTime: TimeResolver, containerRef: Ref
     setHoverTime(null)
   }, [setHoverTime])
 
+  // --- Mobile: always-draggable ---
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0]
     if (!touch) return
-    touchStartPos.current = { x: touch.clientX, y: touch.clientY }
-    isInspecting.current = false
-
-    clearHold()
-    holdTimer.current = setTimeout(() => {
-      const pos = touchStartPos.current
-      if (!pos) return
-      isInspecting.current = true
-      setInspecting(true)
-      const time = resolveFromEvent(pos.x)
-      if (time) setHoverTime(time)
-    }, HOLD_DELAY)
-  }, [clearHold, resolveFromEvent, setHoverTime, setInspecting])
+    e.preventDefault()
+    setInspecting(true)
+    lastClientX.current = touch.clientX
+    const time = resolveFromEvent(touch.clientX)
+    if (time) setHoverTime(time)
+  }, [resolveFromEvent, setHoverTime, setInspecting])
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0]
     if (!touch) return
-
-    if (!isInspecting.current && touchStartPos.current) {
-      const dx = Math.abs(touch.clientX - touchStartPos.current.x)
-      const dy = Math.abs(touch.clientY - touchStartPos.current.y)
-      if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
-        clearHold()
-        touchStartPos.current = null
-        return
-      }
-    }
-
-    if (isInspecting.current) {
-      e.preventDefault()
-      const time = resolveFromEvent(touch.clientX)
-      if (time) setHoverTime(time)
-    }
-  }, [clearHold, resolveFromEvent, setHoverTime])
+    e.preventDefault()
+    lastClientX.current = touch.clientX
+    const time = resolveFromEvent(touch.clientX)
+    if (time) setHoverTime(time)
+    startEdgeScroll(touch.clientX)
+  }, [resolveFromEvent, setHoverTime, startEdgeScroll])
 
   const handleTouchEnd = useCallback(() => {
-    clearHold()
-    touchStartPos.current = null
-    if (isInspecting.current) {
-      isInspecting.current = false
-      setInspecting(false)
-      setHoverTime(null)
-    }
-  }, [clearHold, setHoverTime, setInspecting])
+    stopEdgeScroll()
+    setInspecting(false)
+  }, [stopEdgeScroll, setInspecting])
 
   return {
     onPointerMove: handlePointerMove,
@@ -218,4 +233,21 @@ export function resolveHoverIdx<T extends { time: string }>(
     if (diff < bestDiff) { bestDiff = diff; best = i }
   }
   return best
+}
+
+export function formatCrosshairTime(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleString('en-US', {
+    weekday: 'short',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
+
+export const DAY_LABEL_FORMAT: Intl.DateTimeFormatOptions = {
+  weekday: 'short',
+  month: 'short',
+  day: 'numeric',
 }

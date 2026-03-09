@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import { getBreakById, getNearbyBreaks } from '@/lib/breaks'
 import {
@@ -22,7 +22,7 @@ import { WeatherStrip } from '@/components/WeatherStrip'
 import { SpotGuide } from '@/components/SpotGuide'
 import { NearbySpots } from '@/components/NearbySpots'
 import { DaylightInfo } from '@/components/DaylightInfo'
-import { CrosshairProvider } from '@/components/ChartCrosshair'
+import { CrosshairProvider, useSharedCrosshair } from '@/components/ChartCrosshair'
 import Link from 'next/link'
 
 function findClosestHour(hours: ForecastDataPoint[]): ForecastDataPoint | null {
@@ -103,6 +103,12 @@ export default function SurfReportPage() {
   const currentForecast = findClosestHour(allHours)
   const days = groupByDay(allHours)
   const dayHours = days[selectedDay]?.samples ?? []
+
+  const chartHours = useMemo(() => {
+    const now = new Date()
+    now.setMinutes(0, 0, 0)
+    return allHours.filter(h => new Date(h.time) >= now)
+  }, [allHours])
 
   const getForecastForCluster = (clusterId: string): ForecastDataPoint | null => {
     const cf = cache?.clusterForecasts[clusterId]
@@ -185,46 +191,49 @@ export default function SurfReportPage() {
 
           {/* Charts Section — shared crosshair syncs hover across all charts */}
           <CrosshairProvider>
+            <CrosshairDismiss />
             <div className="space-y-0">
               {/* Swell Chart */}
-              {allHours.length > 0 && (
+              {chartHours.length > 0 && (
                 <CollapsibleSection
                   title="Swell Height"
                   collapsed={chartsCollapsed['swell']}
                   onToggle={() => toggleChart('swell')}
                 >
-                  <SwellChart hours={allHours} />
+                  <SwellChart hours={chartHours} />
                 </CollapsibleSection>
               )}
 
               {/* Wind Chart */}
-              {allHours.length > 0 && (
+              {chartHours.length > 0 && (
                 <CollapsibleSection
                   title="Wind"
                   collapsed={chartsCollapsed['wind']}
                   onToggle={() => toggleChart('wind')}
                 >
-                  <WindGraph hours={allHours} />
+                  <WindGraph hours={chartHours} />
                 </CollapsibleSection>
               )}
 
               {/* Tide Chart */}
-              <CollapsibleSection
-                title="Tides"
-                collapsed={chartsCollapsed['tide']}
-                onToggle={() => toggleChart('tide')}
-              >
-                <TideChart lat={spot.lat} lng={spot.lng} hours={allHours} />
-              </CollapsibleSection>
+              {chartHours.length > 0 && (
+                <CollapsibleSection
+                  title="Tides"
+                  collapsed={chartsCollapsed['tide']}
+                  onToggle={() => toggleChart('tide')}
+                >
+                  <TideChart lat={spot.lat} lng={spot.lng} hours={chartHours} />
+                </CollapsibleSection>
+              )}
 
               {/* Weather Strip */}
-              {allHours.length > 0 && (
+              {chartHours.length > 0 && (
                 <CollapsibleSection
                   title="Weather"
                   collapsed={chartsCollapsed['weather']}
                   onToggle={() => toggleChart('weather')}
                 >
-                  <WeatherStrip hours={allHours} />
+                  <WeatherStrip hours={chartHours} />
                 </CollapsibleSection>
               )}
             </div>
@@ -255,6 +264,25 @@ export default function SurfReportPage() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function CrosshairDismiss() {
+  const { hoverTime, setHoverTime } = useSharedCrosshair()
+  if (!hoverTime) return null
+  return (
+    <div className="flex items-center justify-end px-4 pt-2 lg:px-6">
+      <button
+        type="button"
+        onClick={() => setHoverTime(null)}
+        className="flex items-center gap-1 rounded-full bg-sl-surface px-3 py-1 text-[11px] font-medium text-sl-muted hover:text-white transition-colors"
+      >
+        Clear selection
+        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
   )
 }
