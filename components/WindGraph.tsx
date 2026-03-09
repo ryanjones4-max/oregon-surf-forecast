@@ -29,13 +29,13 @@ export function WindGraph({ hours }: Props) {
   const { hoverTime, inspecting } = useSharedCrosshair()
   const { containerRef, onScroll } = useSyncedScroll()
 
-  const resolveTime = useCallback((clientX: number, scrollLeft: number) => {
+  const resolveTime = useCallback((clientX: number) => {
     const el = containerRef.current
     if (!el || hours.length === 0) return null
     const svg = el.querySelector('svg')
     if (!svg) return null
     const rect = svg.getBoundingClientRect()
-    const x = clientX - rect.left + scrollLeft
+    const x = clientX - rect.left
     const sampled = hours.filter((_, i) => i % 3 === 0)
     const idx = Math.round(x / PX_PER_STEP)
     const clamped = Math.max(0, Math.min(idx, sampled.length - 1))

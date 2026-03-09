@@ -56,13 +56,13 @@ export function TideChart({ lat, lng, hours }: Props) {
     return days
   }, [lat, lng])
 
-  const resolveTime = useCallback((clientX: number, scrollLeft: number) => {
+  const resolveTime = useCallback((clientX: number) => {
     const el = containerRef.current
     if (!el || sampled.length < 2) return null
     const svg = el.querySelector('svg')
     if (!svg) return null
     const rect = svg.getBoundingClientRect()
-    const x = clientX - rect.left + scrollLeft
+    const x = clientX - rect.left
     const idx = Math.round(x / PX_PER_STEP)
     const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
     return sampled[clamped]?.time ?? null

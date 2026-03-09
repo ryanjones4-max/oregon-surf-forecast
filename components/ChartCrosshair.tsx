@@ -116,7 +116,7 @@ export function useSyncedScroll() {
 // useChartInteraction – unified mouse + touch crosshair handling
 // ---------------------------------------------------------------------------
 
-type TimeResolver = (clientX: number, scrollLeft: number) => string | null
+type TimeResolver = (clientX: number) => string | null
 
 /**
  * Desktop: pointerMove drives crosshair, pointerLeave clears it.
@@ -132,10 +132,8 @@ export function useChartInteraction(resolveTime: TimeResolver, containerRef: Ref
   const lastClientX = useRef<number>(0)
 
   const resolveFromEvent = useCallback((clientX: number) => {
-    const el = containerRef.current
-    if (!el) return null
-    return resolveTime(clientX, el.scrollLeft)
-  }, [containerRef, resolveTime])
+    return resolveTime(clientX)
+  }, [resolveTime])
 
   const stopEdgeScroll = useCallback(() => {
     edgeDir.current = 0
@@ -189,7 +187,8 @@ export function useChartInteraction(resolveTime: TimeResolver, containerRef: Ref
     lastClientX.current = touch.clientX
     const time = resolveFromEvent(touch.clientX)
     if (time) setHoverTime(time)
-  }, [resolveFromEvent, setHoverTime, setInspecting])
+    startEdgeScroll(touch.clientX)
+  }, [resolveFromEvent, setHoverTime, setInspecting, startEdgeScroll])
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0]
