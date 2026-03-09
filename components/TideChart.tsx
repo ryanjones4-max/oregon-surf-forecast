@@ -108,10 +108,10 @@ export function TideChart({ lat, lng, hours }: Props) {
 
   const hourTicks: Array<{ x: number; label: string }> = []
   sampled.forEach((t, i) => {
-    const date = new Date(t.time)
-    const h = date.getUTCHours()
+    const date = parseUTC(t.time)
+    const h = date.getHours()
     if (h % 6 === 0 && h !== 0) {
-      const label = h > 12 ? String(h - 12) : String(h)
+      const label = h === 12 ? '12p' : h > 12 ? `${h - 12}p` : `${h}a`
       hourTicks.push({ x: points[i].x, label })
     }
   })
@@ -165,8 +165,14 @@ export function TideChart({ lat, lng, hours }: Props) {
           ) : null)}
 
           {/* Day/date labels — below time axis */}
+          <line x1={0} y1={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H} x2={chartW} y2={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H} stroke="#404040" strokeWidth="0.5" />
           {daySpans.map((d, i) => (
-            <text key={`daylbl-${i}`} x={d.x + 4} y={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + 12} fill="#aaa" fontSize="10" fontWeight="600">{d.label}</text>
+            <g key={`daylbl-${i}`}>
+              {i > 0 && (
+                <line x1={d.x} y1={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H} x2={d.x} y2={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + DAY_LABEL_H} stroke="#555" strokeWidth="0.5" />
+              )}
+              <text x={d.x + 6} y={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + 12} fill="#ccc" fontSize="10" fontWeight="700">{d.label}</text>
+            </g>
           ))}
 
           <line x1={0} y1={topOffset + PEAK_LABEL_H + CHART_H} x2={chartW} y2={topOffset + PEAK_LABEL_H + CHART_H} stroke="#333333" strokeWidth="0.5" />
