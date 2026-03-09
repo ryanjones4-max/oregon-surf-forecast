@@ -254,3 +254,82 @@ export const DAY_LABEL_FORMAT: Intl.DateTimeFormatOptions = {
   month: 'short',
   day: 'numeric',
 }
+
+// ---------------------------------------------------------------------------
+// CenterTimeIndicator – fixed center-of-viewport time line + pill
+// ---------------------------------------------------------------------------
+
+interface CenterTimeProps {
+  containerRef: RefObject<HTMLDivElement | null>
+  sampled: Array<{ time: string }>
+}
+
+export function CenterTimeIndicator({ containerRef, sampled }: CenterTimeProps) {
+  const [centerTime, setCenterTime] = useState<string | null>(null)
+
+  const resolve = useCallback(() => {
+    const el = containerRef.current
+    if (!el || sampled.length === 0) return
+    const centerX = el.scrollLeft + el.clientWidth / 2
+    const idx = Math.round(centerX / PX_PER_STEP)
+    const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
+    const time = sampled[clamped]?.time ?? null
+    setCenterTime(time)
+  }, [containerRef, sampled])
+
+  useEffect(() => {
+    resolve()
+    const el = containerRef.current
+    if (!el) return
+    el.addEventListener('scroll', resolve, { passive: true })
+    return () => el.removeEventListener('scroll', resolve)
+  }, [containerRef, resolve])
+
+  if (!centerTime) return null
+
+  const label = formatCrosshairTime(centerTime)
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: '50%',
+        top: 0,
+        bottom: 0,
+        width: 0,
+        pointerEvents: 'none',
+        zIndex: 10,
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: '1px',
+          background: 'rgba(255,255,255,0.35)',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          left: '50%',
+          top: -1,
+          transform: 'translateX(-50%)',
+          background: 'rgba(18,18,18,0.95)',
+          border: '1px solid rgba(255,255,255,0.25)',
+          borderRadius: '10px',
+          padding: '2px 10px',
+          whiteSpace: 'nowrap',
+          fontSize: '11px',
+          fontWeight: 600,
+          color: '#e5e5e5',
+          lineHeight: '18px',
+        }}
+      >
+        {label}
+      </div>
+    </div>
+  )
+}

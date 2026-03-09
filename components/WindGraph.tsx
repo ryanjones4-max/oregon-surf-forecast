@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { kmhToMph, degreesToCompass } from '@/lib/surfRating'
-import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT, parseUTC } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT, parseUTC, CenterTimeIndicator } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -101,6 +101,7 @@ export function WindGraph({ hours }: Props) {
         )}
       </div>
 
+      <div style={{ position: 'relative' }}>
       <div
         ref={containerRef}
         className="overflow-x-auto"
@@ -180,6 +181,8 @@ export function WindGraph({ hours }: Props) {
             </g>
           )}
         </svg>
+      </div>
+      <CenterTimeIndicator containerRef={containerRef} sampled={sampled} />
       </div>
 
       <div className="mt-2 flex gap-4 text-[10px] text-sl-muted">

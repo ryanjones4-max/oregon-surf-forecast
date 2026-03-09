@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { celsiusToFahrenheit } from '@/lib/surfRating'
 import { getWeatherEmoji } from '@/lib/weatherCodes'
-import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT, parseUTC } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT, parseUTC, CenterTimeIndicator } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -74,6 +74,7 @@ export function WeatherStrip({ hours }: Props) {
           </div>
         )}
       </div>
+      <div style={{ position: 'relative' }}>
       <div
         ref={containerRef}
         className="overflow-x-auto"
@@ -139,6 +140,8 @@ export function WeatherStrip({ hours }: Props) {
             })}
           </div>
         </div>
+      </div>
+      <CenterTimeIndicator containerRef={containerRef} sampled={sampled} />
       </div>
     </div>
   )
