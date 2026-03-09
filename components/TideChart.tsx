@@ -59,10 +59,8 @@ export function TideChart({ lat, lng, hours }: Props) {
   const resolveTime = useCallback((clientX: number) => {
     const el = containerRef.current
     if (!el || sampled.length < 2) return null
-    const svg = el.querySelector('svg')
-    if (!svg) return null
-    const rect = svg.getBoundingClientRect()
-    const x = clientX - rect.left
+    const rect = el.getBoundingClientRect()
+    const x = clientX - rect.left + el.scrollLeft
     const idx = Math.round(x / PX_PER_STEP)
     const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
     return sampled[clamped]?.time ?? null
@@ -164,17 +162,6 @@ export function TideChart({ lat, lng, hours }: Props) {
             <line key={`div-${i}`} x1={d.x} y1={topOffset + PEAK_LABEL_H} x2={d.x} y2={topOffset + PEAK_LABEL_H + CHART_H} stroke="#555" strokeWidth="1" />
           ) : null)}
 
-          {/* Day/date labels — below time axis */}
-          <line x1={0} y1={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H} x2={chartW} y2={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H} stroke="#404040" strokeWidth="0.5" />
-          {daySpans.map((d, i) => (
-            <g key={`daylbl-${i}`}>
-              {i > 0 && (
-                <line x1={d.x} y1={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H} x2={d.x} y2={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + DAY_LABEL_H} stroke="#555" strokeWidth="0.5" />
-              )}
-              <text x={d.x + 6} y={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + 12} fill="#ccc" fontSize="10" fontWeight="700">{d.label}</text>
-            </g>
-          ))}
-
           <line x1={0} y1={topOffset + PEAK_LABEL_H + CHART_H} x2={chartW} y2={topOffset + PEAK_LABEL_H + CHART_H} stroke="#333333" strokeWidth="0.5" />
 
           {/* Area fill + curve */}
@@ -203,12 +190,12 @@ export function TideChart({ lat, lng, hours }: Props) {
             </g>
           ))}
 
-          {/* Sun events */}
+          {/* Sun events — below time axis */}
           {daySpans.map((span, i) => {
             const sun = sunData[i]?.sun
             if (!sun) return null
             const w = span.endX - span.x
-            const sunY = topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + DAY_LABEL_H
+            const sunY = topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H
             const items = [
               { label: 'First light', time: sun.firstLight, dim: true },
               { label: 'Sunrise', time: sun.sunrise, dim: false },
@@ -232,6 +219,17 @@ export function TideChart({ lat, lng, hours }: Props) {
               </g>
             )
           })}
+
+          {/* Day/date labels — bottom of card */}
+          <line x1={0} y1={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H} x2={chartW} y2={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H} stroke="#404040" strokeWidth="0.5" />
+          {daySpans.map((d, i) => (
+            <g key={`daylbl-${i}`}>
+              {i > 0 && (
+                <line x1={d.x} y1={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H} x2={d.x} y2={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H + DAY_LABEL_H} stroke="#555" strokeWidth="0.5" />
+              )}
+              <text x={d.x + 4} y={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H + 12} fill="#aaa" fontSize="10" fontWeight="600">{d.label}</text>
+            </g>
+          ))}
 
           {/* Hover crosshair + day/time pill */}
           {hovered && (

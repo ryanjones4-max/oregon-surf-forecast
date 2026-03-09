@@ -17,10 +17,8 @@ export function WeatherStrip({ hours }: Props) {
   const resolveTime = useCallback((clientX: number) => {
     const el = containerRef.current
     if (!el || hours.length === 0) return null
-    const inner = el.querySelector('[data-weather-cols]') as HTMLElement | null
-    const target = inner ?? el
-    const rect = target.getBoundingClientRect()
-    const x = clientX - rect.left
+    const rect = el.getBoundingClientRect()
+    const x = clientX - rect.left + el.scrollLeft
     const sampled = hours.filter((_, i) => i % 3 === 0)
     const idx = Math.floor(x / PX_PER_STEP)
     const clamped = Math.max(0, Math.min(idx, sampled.length - 1))

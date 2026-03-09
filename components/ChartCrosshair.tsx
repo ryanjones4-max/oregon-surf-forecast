@@ -131,9 +131,17 @@ export function useChartInteraction(resolveTime: TimeResolver, containerRef: Ref
   const edgeDir = useRef<number>(0)
   const lastClientX = useRef<number>(0)
 
-  const resolveFromEvent = useCallback((clientX: number) => {
-    return resolveTime(clientX)
-  }, [resolveTime])
+  const resolveRef = useRef(resolveTime)
+  resolveRef.current = resolveTime
+
+  const setHoverRef = useRef(setHoverTime)
+  setHoverRef.current = setHoverTime
+
+  const setInspectRef = useRef(setInspecting)
+  setInspectRef.current = setInspecting
+
+  const scrollAllRef = useRef(scrollAllBy)
+  scrollAllRef.current = scrollAllBy
 
   const stopEdgeScroll = useCallback(() => {
     edgeDir.current = 0
@@ -145,11 +153,11 @@ export function useChartInteraction(resolveTime: TimeResolver, containerRef: Ref
 
   const tickEdgeScroll = useCallback(() => {
     if (edgeDir.current === 0) return
-    scrollAllBy(edgeDir.current * EDGE_SCROLL_SPEED)
-    const time = resolveFromEvent(lastClientX.current)
-    if (time) setHoverTime(time)
+    scrollAllRef.current(edgeDir.current * EDGE_SCROLL_SPEED)
+    const time = resolveRef.current(lastClientX.current)
+    if (time) setHoverRef.current(time)
     edgeRaf.current = requestAnimationFrame(tickEdgeScroll)
-  }, [scrollAllBy, resolveFromEvent, setHoverTime])
+  }, [])
 
   const startEdgeScroll = useCallback((clientX: number) => {
     const vw = window.innerWidth
@@ -166,52 +174,71 @@ export function useChartInteraction(resolveTime: TimeResolver, containerRef: Ref
     }
   }, [stopEdgeScroll, tickEdgeScroll])
 
-  // --- Desktop ---
+  const startEdgeRef = useRef(startEdgeScroll)
+  startEdgeRef.current = startEdgeScroll
+
+  const stopEdgeRef = useRef(stopEdgeScroll)
+  stopEdgeRef.current = stopEdgeScroll
+
+  // Attach native touch listeners with { passive: false } so preventDefault() works on iOS
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    function onTouchStart(e: TouchEvent) {
+      const touch = e.touches[0]
+      if (!touch) return
+      e.preventDefault()
+      setInspectRef.current(true)
+      lastClientX.current = touch.clientX
+      const time = resolveRef.current(touch.clientX)
+      if (time) setHoverRef.current(time)
+      startEdgeRef.current(touch.clientX)
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      const touch = e.touches[0]
+      if (!touch) return
+      e.preventDefault()
+      lastClientX.current = touch.clientX
+      const time = resolveRef.current(touch.clientX)
+      if (time) setHoverRef.current(time)
+      startEdgeRef.current(touch.clientX)
+    }
+
+    function onTouchEnd() {
+      stopEdgeRef.current()
+      setInspectRef.current(false)
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: false })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd)
+    el.addEventListener('touchcancel', onTouchEnd)
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+      el.removeEventListener('touchcancel', onTouchEnd)
+    }
+  }, [containerRef])
+
+  // Desktop only — pointer events (touch is handled natively above)
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'touch') return
-    const time = resolveFromEvent(e.clientX)
-    if (time) setHoverTime(time)
-  }, [resolveFromEvent, setHoverTime])
+    const time = resolveRef.current(e.clientX)
+    if (time) setHoverRef.current(time)
+  }, [])
 
   const handlePointerLeave = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'touch') return
-    setHoverTime(null)
-  }, [setHoverTime])
-
-  // --- Mobile: always-draggable ---
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    const touch = e.touches[0]
-    if (!touch) return
-    e.preventDefault()
-    setInspecting(true)
-    lastClientX.current = touch.clientX
-    const time = resolveFromEvent(touch.clientX)
-    if (time) setHoverTime(time)
-    startEdgeScroll(touch.clientX)
-  }, [resolveFromEvent, setHoverTime, setInspecting, startEdgeScroll])
-
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    const touch = e.touches[0]
-    if (!touch) return
-    e.preventDefault()
-    lastClientX.current = touch.clientX
-    const time = resolveFromEvent(touch.clientX)
-    if (time) setHoverTime(time)
-    startEdgeScroll(touch.clientX)
-  }, [resolveFromEvent, setHoverTime, startEdgeScroll])
-
-  const handleTouchEnd = useCallback(() => {
-    stopEdgeScroll()
-    setInspecting(false)
-  }, [stopEdgeScroll, setInspecting])
+    setHoverRef.current(null)
+  }, [])
 
   return {
     onPointerMove: handlePointerMove,
     onPointerLeave: handlePointerLeave,
-    onTouchStart: handleTouchStart,
-    onTouchMove: handleTouchMove,
-    onTouchEnd: handleTouchEnd,
-    onTouchCancel: handleTouchEnd,
   }
 }
 

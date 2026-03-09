@@ -110,10 +110,16 @@ export default function SurfReportPage() {
   const days = groupByDay(allHours)
   const dayHours = days[selectedDay]?.samples ?? []
 
-  const chartHours = useMemo(() => {
-    const nowMs = Date.now()
-    return allHours.filter(h => new Date(h.time + 'Z').getTime() >= nowMs - 3600000)
+  const currentHourMs = useMemo(() => {
+    const now = new Date()
+    now.setMinutes(0, 0, 0)
+    return now.getTime()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allHours])
+
+  const chartHours = useMemo(() => {
+    return allHours.filter(h => new Date(h.time + 'Z').getTime() >= currentHourMs)
+  }, [allHours, currentHourMs])
 
   const getForecastForCluster = (clusterId: string): ForecastDataPoint | null => {
     const cf = cache?.clusterForecasts[clusterId]
