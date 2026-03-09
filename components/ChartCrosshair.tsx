@@ -255,8 +255,6 @@ export function CenterTimeIndicator({ containerRef, sampled }: CenterTimeProps) 
 
   if (!centerTime) return null
 
-  const label = formatCrosshairTime(centerTime)
-
   return (
     <div
       style={{
@@ -279,25 +277,6 @@ export function CenterTimeIndicator({ containerRef, sampled }: CenterTimeProps) 
           background: 'rgba(255,255,255,0.35)',
         }}
       />
-      <div
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: -1,
-          transform: 'translateX(-50%)',
-          background: 'rgba(18,18,18,0.95)',
-          border: '1px solid rgba(255,255,255,0.25)',
-          borderRadius: '10px',
-          padding: '2px 10px',
-          whiteSpace: 'nowrap',
-          fontSize: '11px',
-          fontWeight: 600,
-          color: '#e5e5e5',
-          lineHeight: '18px',
-        }}
-      >
-        {label}
-      </div>
     </div>
   )
 }
