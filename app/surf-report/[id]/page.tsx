@@ -89,6 +89,20 @@ export default function SurfReportPage() {
 
   useEffect(() => { loadForecast() }, [loadForecast])
 
+  const clusterForecast = spot && cache ? cache.clusterForecasts[spot.clusterId] : null
+  const allHours = clusterForecast?.hours ?? []
+
+  const currentHourMs = useMemo(() => {
+    const now = new Date()
+    now.setMinutes(0, 0, 0)
+    return now.getTime()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allHours])
+
+  const chartHours = useMemo(() => {
+    return allHours.filter(h => new Date(h.time + 'Z').getTime() >= currentHourMs)
+  }, [allHours, currentHourMs])
+
   if (!spot) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-sl-bg p-8">
@@ -104,22 +118,9 @@ export default function SurfReportPage() {
     )
   }
 
-  const clusterForecast = cache ? cache.clusterForecasts[spot.clusterId] : null
-  const allHours = clusterForecast?.hours ?? []
   const currentForecast = findClosestHour(allHours)
   const days = groupByDay(allHours)
   const dayHours = days[selectedDay]?.samples ?? []
-
-  const currentHourMs = useMemo(() => {
-    const now = new Date()
-    now.setMinutes(0, 0, 0)
-    return now.getTime()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allHours])
-
-  const chartHours = useMemo(() => {
-    return allHours.filter(h => new Date(h.time + 'Z').getTime() >= currentHourMs)
-  }, [allHours, currentHourMs])
 
   const getForecastForCluster = (clusterId: string): ForecastDataPoint | null => {
     const cf = cache?.clusterForecasts[clusterId]
