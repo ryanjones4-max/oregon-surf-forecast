@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { metersToFeet, degreesToCompass, computeSurfRating, getRatingDot, estimateBreakingHeight, surfHeightRange } from '@/lib/surfRating'
-import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT, parseUTC } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -60,7 +60,7 @@ export function SwellChart({ hours }: Props) {
     const d = b.h.time.slice(0, 10)
     if (d !== lastDay) {
       lastDay = d
-      const date = new Date(b.h.time)
+      const date = parseUTC(b.h.time)
       dayLabels.push({ x: b.x, label: date.toLocaleDateString('en-US', DAY_LABEL_FORMAT), dayIdx: dayLabels.length })
     }
   })
@@ -161,7 +161,7 @@ export function SwellChart({ hours }: Props) {
           {/* Hour labels */}
           {bars.map((b) => {
             if (b.i % labelEvery !== 0) return null
-            const hour = new Date(b.h.time).getHours()
+            const hour = parseUTC(b.h.time).getHours()
             return (
               <text key={`h${b.i}`} x={b.x + barW / 2} y={topOffset + ratingBarH + chartH + 14} fill="#6e6e6e" fontSize="7" textAnchor="middle">
                 {hour === 0 ? '12a' : hour < 12 ? `${hour}` : hour === 12 ? '12p' : `${hour - 12}`}

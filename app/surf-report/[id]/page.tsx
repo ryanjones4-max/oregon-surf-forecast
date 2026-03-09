@@ -59,7 +59,7 @@ export default function SurfReportPage() {
     if (cached) {
       const nowMs = Date.now()
       const hasFutureData = Object.values(cached.clusterForecasts).some(cf =>
-        cf.hours.some(h => new Date(h.time).getTime() > nowMs)
+        cf.hours.some(h => new Date(h.time + 'Z').getTime() > nowMs)
       )
       if (hasFutureData) {
         setCache(cached)
@@ -112,7 +112,7 @@ export default function SurfReportPage() {
 
   const chartHours = useMemo(() => {
     const nowMs = Date.now()
-    return allHours.filter(h => new Date(h.time).getTime() >= nowMs - 3600000)
+    return allHours.filter(h => new Date(h.time + 'Z').getTime() >= nowMs - 3600000)
   }, [allHours])
 
   const getForecastForCluster = (clusterId: string): ForecastDataPoint | null => {

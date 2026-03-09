@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { celsiusToFahrenheit } from '@/lib/surfRating'
 import { getWeatherEmoji } from '@/lib/weatherCodes'
-import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT, parseUTC } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -47,7 +47,7 @@ export function WeatherStrip({ hours }: Props) {
       lastDay = d
       if (i > 0) dayBoundaries.push(i)
       if (daySpans.length > 0) daySpans[daySpans.length - 1].endIdx = i
-      const date = new Date(h.time)
+      const date = parseUTC(h.time)
       daySpans.push({
         startIdx: i,
         endIdx: sampled.length,
@@ -108,7 +108,7 @@ export function WeatherStrip({ hours }: Props) {
             {sampled.map((h, i) => {
               const isDayBoundary = dayBoundaries.includes(i)
               const isHov = hoverIdx === i
-              const date = new Date(h.time)
+              const date = parseUTC(h.time)
               const hour = date.getHours()
               const timeLabel = hour === 0 ? '12a' : hour < 12 ? `${hour}a` : hour === 12 ? '12p' : `${hour - 12}p`
               const tempF = h.airTemperature != null ? Math.round(celsiusToFahrenheit(h.airTemperature)) : null

@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { kmhToMph, degreesToCompass } from '@/lib/surfRating'
-import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT, parseUTC } from './ChartCrosshair'
 
 interface Props {
   hours: ForecastDataPoint[]
@@ -73,7 +73,7 @@ export function WindGraph({ hours }: Props) {
     const d = b.h.time.slice(0, 10)
     if (d !== lastDay) {
       lastDay = d
-      const date = new Date(b.h.time)
+      const date = parseUTC(b.h.time)
       dayLabels.push({ x: b.x, label: date.toLocaleDateString('en-US', DAY_LABEL_FORMAT), dayIdx: dayLabels.length })
     }
   })

@@ -235,9 +235,12 @@ export function resolveHoverIdx<T extends { time: string }>(
   return best
 }
 
+export function parseUTC(iso: string): Date {
+  return new Date(iso.endsWith('Z') ? iso : iso + 'Z')
+}
+
 export function formatCrosshairTime(iso: string): string {
-  const d = new Date(iso)
-  return d.toLocaleString('en-US', {
+  return parseUTC(iso).toLocaleString('en-US', {
     weekday: 'short',
     month: 'numeric',
     day: 'numeric',

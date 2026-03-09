@@ -3,7 +3,7 @@
 import { useMemo, useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
 import { calculateSunTimes } from '@/lib/sun'
-import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT } from './ChartCrosshair'
+import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT, parseUTC } from './ChartCrosshair'
 
 interface TidePoint {
   time: string
@@ -28,6 +28,7 @@ const CHART_H = 100
 const PEAK_LABEL_H = 40
 const PILL_H = 20
 const TIME_AXIS_H = 18
+const DAY_LABEL_H = 16
 const SUN_ROW_H = 38
 
 export function TideChart({ lat, lng, hours }: Props) {
@@ -73,7 +74,7 @@ export function TideChart({ lat, lng, hours }: Props) {
 
   const step = PX_PER_STEP
   const chartW = sampled.length * step
-  const totalH = PILL_H + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H
+  const totalH = PILL_H + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + DAY_LABEL_H + SUN_ROW_H
   const topOffset = PILL_H
 
   const heights = sampled.map((t) => t.height)
@@ -99,7 +100,7 @@ export function TideChart({ lat, lng, hours }: Props) {
     if (d !== lastDay) {
       lastDay = d
       if (currentSpan) currentSpan.endX = p.x - step / 2
-      const date = new Date(p.t.time)
+      const date = parseUTC(p.t.time)
       currentSpan = { x: p.x - step / 2, endX: chartW, dayIdx: daySpans.length, label: date.toLocaleDateString('en-US', DAY_LABEL_FORMAT) }
       daySpans.push(currentSpan)
     }
@@ -157,14 +158,14 @@ export function TideChart({ lat, lng, hours }: Props) {
             ) : null
           })}
 
-          {/* Day dividers + labels */}
+          {/* Day dividers */}
+          {daySpans.map((d, i) => i > 0 ? (
+            <line key={`div-${i}`} x1={d.x} y1={topOffset + PEAK_LABEL_H} x2={d.x} y2={topOffset + PEAK_LABEL_H + CHART_H} stroke="#555" strokeWidth="1" />
+          ) : null)}
+
+          {/* Day/date labels — below time axis */}
           {daySpans.map((d, i) => (
-            <g key={`div-${i}`}>
-              {i > 0 && (
-                <line x1={d.x} y1={topOffset + PEAK_LABEL_H} x2={d.x} y2={topOffset + PEAK_LABEL_H + CHART_H} stroke="#555" strokeWidth="1" />
-              )}
-              <text x={d.x + 4} y={topOffset + PEAK_LABEL_H + CHART_H + 13} fill="#aaa" fontSize="10" fontWeight="600">{d.label}</text>
-            </g>
+            <text key={`daylbl-${i}`} x={d.x + 4} y={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + 12} fill="#aaa" fontSize="10" fontWeight="600">{d.label}</text>
           ))}
 
           <line x1={0} y1={topOffset + PEAK_LABEL_H + CHART_H} x2={chartW} y2={topOffset + PEAK_LABEL_H + CHART_H} stroke="#333333" strokeWidth="0.5" />
@@ -175,7 +176,7 @@ export function TideChart({ lat, lng, hours }: Props) {
 
           {/* Peak labels */}
           {peaks.map((pk, i) => {
-            const date = new Date(pk.time)
+            const date = parseUTC(pk.time)
             const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
             const isHigh = pk.type === 'high'
             const baseY = isHigh ? pk.y - 8 : pk.y + 14
@@ -200,7 +201,7 @@ export function TideChart({ lat, lng, hours }: Props) {
             const sun = sunData[i]?.sun
             if (!sun) return null
             const w = span.endX - span.x
-            const sunY = topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H
+            const sunY = topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + DAY_LABEL_H
             const items = [
               { label: 'First light', time: sun.firstLight, dim: true },
               { label: 'Sunrise', time: sun.sunrise, dim: false },
