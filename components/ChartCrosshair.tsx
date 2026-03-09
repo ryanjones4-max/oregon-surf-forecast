@@ -27,8 +27,6 @@ const EDGE_SCROLL_SPEED = 6
 interface CrosshairCtx {
   hoverTime: string | null
   setHoverTime: (t: string | null) => void
-  inspecting: boolean
-  setInspecting: (v: boolean) => void
   registerScroller: (ref: RefObject<HTMLDivElement | null>) => void
   unregisterScroller: (ref: RefObject<HTMLDivElement | null>) => void
   syncScroll: (source: RefObject<HTMLDivElement | null>) => void
@@ -38,8 +36,6 @@ interface CrosshairCtx {
 const CrosshairContext = createContext<CrosshairCtx>({
   hoverTime: null,
   setHoverTime: () => {},
-  inspecting: false,
-  setInspecting: () => {},
   registerScroller: () => {},
   unregisterScroller: () => {},
   syncScroll: () => {},
@@ -48,7 +44,6 @@ const CrosshairContext = createContext<CrosshairCtx>({
 
 export function CrosshairProvider({ children }: { children: ReactNode }) {
   const [hoverTime, setHoverTime] = useState<string | null>(null)
-  const [inspecting, setInspecting] = useState(false)
   const scrollersRef = useRef<Set<RefObject<HTMLDivElement | null>>>(new Set())
   const isSyncing = useRef(false)
 
@@ -81,8 +76,8 @@ export function CrosshairProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ hoverTime, setHoverTime, inspecting, setInspecting, registerScroller, unregisterScroller, syncScroll, scrollAllBy }),
-    [hoverTime, inspecting, registerScroller, unregisterScroller, syncScroll, scrollAllBy],
+    () => ({ hoverTime, setHoverTime, registerScroller, unregisterScroller, syncScroll, scrollAllBy }),
+    [hoverTime, registerScroller, unregisterScroller, syncScroll, scrollAllBy],
   )
 
   return <CrosshairContext.Provider value={value}>{children}</CrosshairContext.Provider>
@@ -120,16 +115,14 @@ type TimeResolver = (clientX: number) => string | null
 
 /**
  * Desktop: pointerMove drives crosshair, pointerLeave clears it.
- * Mobile:  any touch instantly drives the crosshair (always-draggable).
- *          Crosshair persists on lift. Edge auto-scroll when finger is
- *          near viewport edges.
+ * Mobile:  Touch-drag scrolls all charts and the crosshair stays locked
+ *          to the viewport center (driven by CenterTimeIndicator via
+ *          scroll events). Native scroll is fully disabled — the finger
+ *          directly controls scrollLeft so the crosshair line acts as
+ *          the anchor.
  */
 export function useChartInteraction(resolveTime: TimeResolver, containerRef: RefObject<HTMLDivElement | null>) {
-  const { setHoverTime, setInspecting, scrollAllBy } = useSharedCrosshair()
-
-  const edgeRaf = useRef<number | null>(null)
-  const edgeDir = useRef<number>(0)
-  const lastClientX = useRef<number>(0)
+  const { setHoverTime, scrollAllBy } = useSharedCrosshair()
 
   const resolveRef = useRef(resolveTime)
   resolveRef.current = resolveTime
@@ -137,50 +130,11 @@ export function useChartInteraction(resolveTime: TimeResolver, containerRef: Ref
   const setHoverRef = useRef(setHoverTime)
   setHoverRef.current = setHoverTime
 
-  const setInspectRef = useRef(setInspecting)
-  setInspectRef.current = setInspecting
-
   const scrollAllRef = useRef(scrollAllBy)
   scrollAllRef.current = scrollAllBy
 
-  const stopEdgeScroll = useCallback(() => {
-    edgeDir.current = 0
-    if (edgeRaf.current != null) {
-      cancelAnimationFrame(edgeRaf.current)
-      edgeRaf.current = null
-    }
-  }, [])
+  const lastTouchX = useRef<number>(0)
 
-  const tickEdgeScroll = useCallback(() => {
-    if (edgeDir.current === 0) return
-    scrollAllRef.current(edgeDir.current * EDGE_SCROLL_SPEED)
-    const time = resolveRef.current(lastClientX.current)
-    if (time) setHoverRef.current(time)
-    edgeRaf.current = requestAnimationFrame(tickEdgeScroll)
-  }, [])
-
-  const startEdgeScroll = useCallback((clientX: number) => {
-    const vw = window.innerWidth
-    let dir = 0
-    if (clientX < EDGE_ZONE) dir = -1
-    else if (clientX > vw - EDGE_ZONE) dir = 1
-
-    if (dir !== edgeDir.current) {
-      stopEdgeScroll()
-      edgeDir.current = dir
-      if (dir !== 0) {
-        edgeRaf.current = requestAnimationFrame(tickEdgeScroll)
-      }
-    }
-  }, [stopEdgeScroll, tickEdgeScroll])
-
-  const startEdgeRef = useRef(startEdgeScroll)
-  startEdgeRef.current = startEdgeScroll
-
-  const stopEdgeRef = useRef(stopEdgeScroll)
-  stopEdgeRef.current = stopEdgeScroll
-
-  // Attach native touch listeners with { passive: false } so preventDefault() works on iOS
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
@@ -189,42 +143,28 @@ export function useChartInteraction(resolveTime: TimeResolver, containerRef: Ref
       const touch = e.touches[0]
       if (!touch) return
       e.preventDefault()
-      setInspectRef.current(true)
-      lastClientX.current = touch.clientX
-      const time = resolveRef.current(touch.clientX)
-      if (time) setHoverRef.current(time)
-      startEdgeRef.current(touch.clientX)
+      lastTouchX.current = touch.clientX
     }
 
     function onTouchMove(e: TouchEvent) {
       const touch = e.touches[0]
       if (!touch) return
       e.preventDefault()
-      lastClientX.current = touch.clientX
-      const time = resolveRef.current(touch.clientX)
-      if (time) setHoverRef.current(time)
-      startEdgeRef.current(touch.clientX)
-    }
-
-    function onTouchEnd() {
-      stopEdgeRef.current()
-      setInspectRef.current(false)
+      const dx = lastTouchX.current - touch.clientX
+      lastTouchX.current = touch.clientX
+      scrollAllRef.current(dx)
     }
 
     el.addEventListener('touchstart', onTouchStart, { passive: false })
     el.addEventListener('touchmove', onTouchMove, { passive: false })
-    el.addEventListener('touchend', onTouchEnd)
-    el.addEventListener('touchcancel', onTouchEnd)
 
     return () => {
       el.removeEventListener('touchstart', onTouchStart)
       el.removeEventListener('touchmove', onTouchMove)
-      el.removeEventListener('touchend', onTouchEnd)
-      el.removeEventListener('touchcancel', onTouchEnd)
     }
   }, [containerRef])
 
-  // Desktop only — pointer events (touch is handled natively above)
+  // Desktop only — pointer events
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'touch') return
     const time = resolveRef.current(e.clientX)
@@ -292,6 +232,7 @@ interface CenterTimeProps {
 
 export function CenterTimeIndicator({ containerRef, sampled }: CenterTimeProps) {
   const [centerTime, setCenterTime] = useState<string | null>(null)
+  const { setHoverTime } = useSharedCrosshair()
 
   const resolve = useCallback(() => {
     const el = containerRef.current
@@ -301,7 +242,8 @@ export function CenterTimeIndicator({ containerRef, sampled }: CenterTimeProps) 
     const clamped = Math.max(0, Math.min(idx, sampled.length - 1))
     const time = sampled[clamped]?.time ?? null
     setCenterTime(time)
-  }, [containerRef, sampled])
+    setHoverTime(time)
+  }, [containerRef, sampled, setHoverTime])
 
   useEffect(() => {
     resolve()

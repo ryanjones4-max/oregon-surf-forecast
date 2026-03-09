@@ -2,7 +2,6 @@
 
 import { useMemo, useCallback } from 'react'
 import type { ForecastDataPoint } from '@/lib/forecast'
-import { calculateSunTimes } from '@/lib/sun'
 import { useSharedCrosshair, useSyncedScroll, useChartInteraction, resolveHoverIdx, PX_PER_STEP, formatCrosshairTime, DAY_LABEL_FORMAT, parseUTC, CenterTimeIndicator } from './ChartCrosshair'
 
 interface TidePoint {
@@ -24,15 +23,13 @@ interface PeakLabel {
   type: 'high' | 'low'
 }
 
-const CHART_H = 100
-const PEAK_LABEL_H = 40
-const PILL_H = 20
-const TIME_AXIS_H = 18
+const CHART_H = 65
+const PEAK_LABEL_H = 24
+const TIME_AXIS_H = 14
 const DAY_LABEL_H = 16
-const SUN_ROW_H = 38
 
 export function TideChart({ lat, lng, hours }: Props) {
-  const { hoverTime, inspecting } = useSharedCrosshair()
+  const { hoverTime } = useSharedCrosshair()
   const { containerRef, onScroll } = useSyncedScroll()
 
   const sampled = useMemo(() => {
@@ -44,17 +41,6 @@ export function TideChart({ lat, lng, hours }: Props) {
         height: generateTideApprox(h.time, lat),
       }))
   }, [hours, lat])
-
-  const sunData = useMemo(() => {
-    const days: Array<{ date: Date; sun: ReturnType<typeof calculateSunTimes> }> = []
-    const start = new Date()
-    start.setHours(0, 0, 0, 0)
-    for (let d = 0; d < 10; d++) {
-      const date = new Date(start.getTime() + d * 86400000)
-      days.push({ date, sun: calculateSunTimes(lat, lng, date) })
-    }
-    return days
-  }, [lat, lng])
 
   const resolveTime = useCallback((clientX: number) => {
     const el = containerRef.current
@@ -72,8 +58,8 @@ export function TideChart({ lat, lng, hours }: Props) {
 
   const step = PX_PER_STEP
   const chartW = sampled.length * step
-  const totalH = PILL_H + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + DAY_LABEL_H + SUN_ROW_H
-  const topOffset = PILL_H
+  const totalH = PEAK_LABEL_H + CHART_H + TIME_AXIS_H + DAY_LABEL_H
+  const topOffset = 0
 
   const heights = sampled.map((t) => t.height)
   const maxH = Math.max(...heights)
@@ -118,8 +104,8 @@ export function TideChart({ lat, lng, hours }: Props) {
   const hovered = hoverIdx != null ? points[hoverIdx] : null
 
   return (
-    <div className="rounded-lg border border-sl-border bg-sl-card p-4">
-      <div className="mb-3 flex items-start justify-between">
+    <div className="rounded-lg border border-sl-border bg-sl-card px-3 py-2">
+      <div className="mb-1.5 flex items-start justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-sl-muted">
           Tides <span className="font-normal text-sl-muted/50">(ft)</span>
         </h3>
@@ -138,7 +124,7 @@ export function TideChart({ lat, lng, hours }: Props) {
       <div
         ref={containerRef}
         className="overflow-x-auto"
-        style={{ touchAction: inspecting ? 'none' : 'pan-x' }}
+        style={{ touchAction: 'none' }}
         {...interaction}
         onScroll={onScroll}
       >
@@ -190,57 +176,21 @@ export function TideChart({ lat, lng, hours }: Props) {
             </g>
           ))}
 
-          {/* Sun events — below time axis */}
-          {daySpans.map((span, i) => {
-            const sun = sunData[i]?.sun
-            if (!sun) return null
-            const w = span.endX - span.x
-            const sunY = topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H
-            const items = [
-              { label: 'First light', time: sun.firstLight, dim: true },
-              { label: 'Sunrise', time: sun.sunrise, dim: false },
-              { label: 'Sunset', time: sun.sunset, dim: false },
-              { label: 'Last light', time: sun.lastLight, dim: true },
-            ]
-            const slotW = w / items.length
-            if (slotW < 24) return null
-            return (
-              <g key={`sun-row-${i}`}>
-                <line x1={span.x} y1={sunY} x2={span.endX} y2={sunY} stroke="#333333" strokeWidth="0.5" />
-                {items.map((evt, j) => {
-                  const cx = span.x + slotW * j + slotW / 2
-                  return (
-                    <g key={`sun-${i}-${j}`} opacity={evt.dim ? 0.5 : 0.8}>
-                      <text x={cx} y={sunY + 14} fill="#858585" fontSize="7" textAnchor="middle" fontWeight="500">{evt.label}</text>
-                      <text x={cx} y={sunY + 24} fill="#d4d4d4" fontSize="7.5" textAnchor="middle" fontWeight="500">{evt.time}</text>
-                    </g>
-                  )
-                })}
-              </g>
-            )
-          })}
-
           {/* Day/date labels — bottom of card */}
-          <line x1={0} y1={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H} x2={chartW} y2={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H} stroke="#404040" strokeWidth="0.5" />
+          <line x1={0} y1={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H} x2={chartW} y2={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H} stroke="#404040" strokeWidth="0.5" />
           {daySpans.map((d, i) => (
             <g key={`daylbl-${i}`}>
               {i > 0 && (
-                <line x1={d.x} y1={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H} x2={d.x} y2={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H + DAY_LABEL_H} stroke="#555" strokeWidth="0.5" />
+                <line x1={d.x} y1={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H} x2={d.x} y2={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + DAY_LABEL_H} stroke="#555" strokeWidth="0.5" />
               )}
-              <text x={d.x + 4} y={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + SUN_ROW_H + 12} fill="#aaa" fontSize="10" fontWeight="600">{d.label}</text>
+              <text x={d.x + 4} y={topOffset + PEAK_LABEL_H + CHART_H + TIME_AXIS_H + 12} fill="#aaa" fontSize="10" fontWeight="600">{d.label}</text>
             </g>
           ))}
 
-          {/* Hover crosshair + day/time pill */}
+          {/* Hover highlight */}
           {hovered && (
             <g>
-              <line x1={hovered.x} y1={topOffset + PEAK_LABEL_H} x2={hovered.x} y2={topOffset + PEAK_LABEL_H + CHART_H} stroke="#d4d4d4" strokeWidth="1" opacity="0.4" />
-              <circle cx={hovered.x} cy={hovered.y} r="5" fill="#858585" stroke="#121212" strokeWidth="2" />
-              {/* Floating pill */}
-              <rect x={hovered.x - 52} y={0} width={104} height={18} rx={9} fill="rgba(18,18,18,0.92)" stroke="#555" strokeWidth="0.5" />
-              <text x={hovered.x} y={13} fill="#d4d4d4" fontSize="9" fontWeight="600" textAnchor="middle">
-                {formatCrosshairTime(hovered.t.time)}
-              </text>
+              <line x1={hovered.x} y1={topOffset + PEAK_LABEL_H} x2={hovered.x} y2={topOffset + PEAK_LABEL_H + CHART_H} stroke="#d4d4d4" strokeWidth="1" opacity="0.25" />
             </g>
           )}
         </svg>

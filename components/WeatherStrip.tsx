@@ -12,7 +12,7 @@ interface Props {
 
 export function WeatherStrip({ hours }: Props) {
   const { containerRef, onScroll } = useSyncedScroll()
-  const { hoverTime, inspecting } = useSharedCrosshair()
+  const { hoverTime } = useSharedCrosshair()
 
   const resolveTime = useCallback((clientX: number) => {
     const el = containerRef.current
@@ -76,7 +76,7 @@ export function WeatherStrip({ hours }: Props) {
       <div
         ref={containerRef}
         className="overflow-x-auto"
-        style={{ touchAction: inspecting ? 'none' : 'pan-x' }}
+        style={{ touchAction: 'none' }}
         {...interaction}
         onScroll={onScroll}
       >

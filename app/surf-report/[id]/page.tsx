@@ -22,7 +22,7 @@ import { WeatherStrip } from '@/components/WeatherStrip'
 import { SpotGuide } from '@/components/SpotGuide'
 import { NearbySpots } from '@/components/NearbySpots'
 import { DaylightInfo } from '@/components/DaylightInfo'
-import { CrosshairProvider, useSharedCrosshair } from '@/components/ChartCrosshair'
+import { CrosshairProvider } from '@/components/ChartCrosshair'
 import Link from 'next/link'
 
 function findClosestHour(hours: ForecastDataPoint[]): ForecastDataPoint | null {
@@ -202,7 +202,6 @@ export default function SurfReportPage() {
 
           {/* Charts Section — shared crosshair syncs hover across all charts */}
           <CrosshairProvider>
-            <CrosshairDismiss />
             <div className="space-y-0">
               {/* Swell Chart */}
               {chartHours.length > 0 && (
@@ -279,25 +278,6 @@ export default function SurfReportPage() {
   )
 }
 
-function CrosshairDismiss() {
-  const { hoverTime, setHoverTime } = useSharedCrosshair()
-  if (!hoverTime) return null
-  return (
-    <div className="flex items-center justify-end px-4 pt-2 lg:px-6">
-      <button
-        type="button"
-        onClick={() => setHoverTime(null)}
-        className="flex items-center gap-1 rounded-full bg-sl-surface px-3 py-1 text-[11px] font-medium text-sl-muted hover:text-white transition-colors"
-      >
-        Clear selection
-        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-  )
-}
-
 function CollapsibleSection({
   title,
   collapsed,
@@ -314,7 +294,7 @@ function CollapsibleSection({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between px-4 py-3 lg:px-6 hover:bg-sl-surface/30 transition-colors"
+        className="flex w-full items-center justify-between px-4 py-1.5 lg:px-6 hover:bg-sl-surface/30 transition-colors"
       >
         <span className="text-xs font-semibold uppercase tracking-wider text-sl-muted">{title}</span>
         <svg
@@ -327,7 +307,7 @@ function CollapsibleSection({
           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
         </svg>
       </button>
-      {!collapsed && <div className="px-4 pb-4 lg:px-6">{children}</div>}
+      {!collapsed && <div className="px-4 pb-2 lg:px-6">{children}</div>}
     </div>
   )
 }

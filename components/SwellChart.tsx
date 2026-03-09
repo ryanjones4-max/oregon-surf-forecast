@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function SwellChart({ hours }: Props) {
-  const { hoverTime, inspecting } = useSharedCrosshair()
+  const { hoverTime } = useSharedCrosshair()
   const { containerRef, onScroll } = useSyncedScroll()
 
   const resolveTime = useCallback((clientX: number) => {
@@ -36,12 +36,11 @@ export function SwellChart({ hours }: Props) {
   const chartW = sampled.length * step
   const barW = Math.max(2, step * 0.7)
 
-  const pillH = 20
   const ratingBarH = 6
-  const chartH = 110
-  const labelH = 24
-  const totalH = pillH + ratingBarH + chartH + labelH
-  const topOffset = pillH
+  const chartH = 70
+  const labelH = 20
+  const totalH = ratingBarH + chartH + labelH
+  const topOffset = 0
 
   const bars = sampled.map((h, i) => {
     const ft = metersToFeet(estimateBreakingHeight(h.waveHeight, h.swellPeriod))
@@ -69,8 +68,8 @@ export function SwellChart({ hours }: Props) {
   const labelEvery = Math.max(1, Math.round(sampled.length / 16))
 
   return (
-    <div className="rounded-lg border border-sl-border bg-sl-card p-4">
-      <div className="mb-3 flex items-start justify-between">
+    <div className="rounded-lg border border-sl-border bg-sl-card px-3 py-2">
+      <div className="mb-1.5 flex items-start justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-sl-muted">Surf Height</h3>
         {hov && (
           <div className="flex items-center gap-4 text-right">
@@ -100,7 +99,7 @@ export function SwellChart({ hours }: Props) {
       <div
         ref={containerRef}
         className="overflow-x-auto"
-        style={{ touchAction: inspecting ? 'none' : 'pan-x' }}
+        style={{ touchAction: 'none' }}
         {...interaction}
         onScroll={onScroll}
       >
@@ -168,16 +167,10 @@ export function SwellChart({ hours }: Props) {
             )
           })}
 
-          {/* Hover crosshair + day/time pill */}
+          {/* Hover highlight */}
           {hov && (
             <g>
-              <line x1={hov.x + barW / 2} y1={topOffset + ratingBarH} x2={hov.x + barW / 2} y2={topOffset + ratingBarH + chartH} stroke="#d4d4d4" strokeWidth="1" opacity="0.4" />
-              <circle cx={hov.x + barW / 2} cy={topOffset + ratingBarH + chartH - hov.barH} r="5" fill={getRatingDot(hov.rating)} stroke="#121212" strokeWidth="2" />
-              {/* Floating pill */}
-              <rect x={hov.x + barW / 2 - 52} y={0} width={104} height={18} rx={9} fill="rgba(18,18,18,0.92)" stroke="#555" strokeWidth="0.5" />
-              <text x={hov.x + barW / 2} y={13} fill="#d4d4d4" fontSize="9" fontWeight="600" textAnchor="middle">
-                {formatCrosshairTime(hov.h.time)}
-              </text>
+              <line x1={hov.x + barW / 2} y1={topOffset + ratingBarH} x2={hov.x + barW / 2} y2={topOffset + ratingBarH + chartH} stroke="#d4d4d4" strokeWidth="1" opacity="0.25" />
             </g>
           )}
         </svg>
